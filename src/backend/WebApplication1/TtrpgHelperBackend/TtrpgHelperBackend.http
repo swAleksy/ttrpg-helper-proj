@@ -1,0 +1,6 @@
+@TtrpgHelperBackend_HostAddress = http://localhost:5012
+
+GET {{TtrpgHelperBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
