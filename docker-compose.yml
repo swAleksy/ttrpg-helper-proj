@@ -1,0 +1,43 @@
+services:
+  backend-api:
+    build:
+      context: ./src/backend/TtrpgHelperBackend
+      dockerfile: TtrpgHelperBackend/Dockerfile
+
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Username=postgres;Password=inz12345;Database=ttrpg_db
+    depends_on:
+      - postgres
+      
+  postgres:
+    image: postgres:latest
+    container_name: ttrpg_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: inz12345
+      POSTGRES_DB: ttrpg_db
+    volumes:
+      - ./pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # optional, so you can connect from local tools like pgAdmin
+
+  frontend-app:
+    build:
+      context: ./src/frontend/ttrpg-helper-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://backend-api:8080
+    depends_on:
+      - backend-api
+    volumes:
+      - ./src/frontend/ttrpg-helper-frontend:/app
+      - /app/node_modules
+      
+volumes:
+  pg_data:
