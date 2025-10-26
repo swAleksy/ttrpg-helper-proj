@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 namespace TtrpgHelperBackend.DTOs;
 
-public class UserLogin
+public class UserLoginDto
 {
     [Required]
     public string Username { get; set; } = string.Empty;

@@ -1,7 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using TtrpgHelperBackend.DTOs;
-using TtrpgHelperBackend.Models;
+using TtrpgHelperBackend.Models.Authentication;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
@@ -12,8 +12,8 @@ namespace TtrpgHelperBackend.Services;
 
 public interface IAuthService
 {
-    Task<User?> Register(UserRegister request);
-    Task<string?> Login(UserLogin request);
+    Task<User?> Register(UserRegisterDto request);
+    Task<string?> Login(UserLoginDto request);
     
 }
 
@@ -46,13 +46,14 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<User?> Register(DTOs.UserRegister request)
+    public async Task<User?> Register(DTOs.UserRegisterDto request)
     {
         var userExists = await _context.Users.AnyAsync(u => u.UserName.ToLower() == request.UserName.ToLower() || u.Email.ToLower() == request.Email.ToLower());
 
         if (userExists)
             return null;
         
+        // zwraca passwordHash / passwordSalt
         CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
         
         var newUser = new User
@@ -90,7 +91,7 @@ public class AuthService : IAuthService
         return newUser;
     }
 
-    public async Task<string?> Login(UserLogin request)
+    public async Task<string?> Login(UserLoginDto request)
     {
         var user = await _context.Users
             .Include(u => u.UserRoles)
@@ -109,6 +110,7 @@ public class AuthService : IAuthService
     {
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.UserName),
         };
         

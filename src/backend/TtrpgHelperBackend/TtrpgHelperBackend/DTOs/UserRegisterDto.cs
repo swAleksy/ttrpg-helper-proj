@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace TtrpgHelperBackend.DTOs;
-public class UserRegister
+public class UserRegisterDto
 {
     [Required]
     [MinLength(3)]

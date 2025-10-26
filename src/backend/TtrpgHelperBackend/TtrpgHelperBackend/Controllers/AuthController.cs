@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TtrpgHelperBackend.DTOs;
 using TtrpgHelperBackend.Services;
 
@@ -16,7 +17,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserRegister request)
+    public async Task<IActionResult> Register(UserRegisterDto request)
     {
        var user = await _authService.Register(request);
        if (user == null)
@@ -32,7 +33,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserLogin request)
+    public async Task<IActionResult> Login(UserLoginDto request)
     {
             var token = await _authService.Login(request);
 
@@ -44,5 +45,11 @@ public class AuthController : ControllerBase
             // Return the (placeholder) token
             return Ok(new { Token = token });
     }
-    
+
+    [Authorize]
+    [HttpGet]
+    public IActionResult AuthOnlyTestEndpoint()
+    {
+        return Ok("Youre authenticated");
+    }
 }

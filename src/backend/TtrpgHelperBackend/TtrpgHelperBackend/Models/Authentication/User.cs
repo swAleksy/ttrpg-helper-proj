@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TtrpgHelperBackend.Models;
+namespace TtrpgHelperBackend.Models.Authentication;
 
 public class User
 {

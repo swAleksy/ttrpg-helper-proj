@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,35 +13,39 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         
-        // builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(x =>
-        // {
-        //     x.TokenValidationParameters = new TokenValidationParameters
-        //     {
-        //         ValidIssuer = builder.Configuration["Tokens:Issuer"],
-        //     }
-        // });
         // Add services to the container.
         builder.Services.AddAuthorization();
 
-        // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
         
-        // 💡 ADD THIS SECTION TO ALLOW TRAILING SLASHES
         builder.Services.Configure<RouteOptions>(options =>
         {
-            // Setting this to true makes the router match both /resource and /resource/
-            // for all endpoints.
-            options.LowercaseUrls = true; // Optional, but good practice
+            options.LowercaseUrls = true; 
             options.AppendTrailingSlash = true;
         });
         
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
+
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = builder.Configuration["AppSettings:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
+                    ValidateIssuerSigningKey = true
+                };
+            });
         
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<ICharacterService, CharacterService>();
 
         
         var app = builder.Build();  
@@ -60,7 +65,7 @@ public class Program
         }
         
         //app.UseHttpsRedirection();
-
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.Run();
