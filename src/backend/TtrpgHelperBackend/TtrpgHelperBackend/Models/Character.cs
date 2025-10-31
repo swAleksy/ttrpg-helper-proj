@@ -9,7 +9,7 @@ public class Character
     public int Id { get; set; }
     
     public int UserId { get; set; }
-    public User User { get; set; } = new User();
+    public User User { get; set; } = null!;
     
     [Required]
     public string Name { get; set; } = string.Empty;

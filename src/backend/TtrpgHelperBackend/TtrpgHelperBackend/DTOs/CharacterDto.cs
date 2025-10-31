@@ -1,6 +1,6 @@
 ﻿namespace TtrpgHelperBackend.DTOs;
 
-public class CharacterCreationDto
+public class CharacterDto
 {
     public string Name { get; set; } = string.Empty;
     public int RaceId { get; set; }

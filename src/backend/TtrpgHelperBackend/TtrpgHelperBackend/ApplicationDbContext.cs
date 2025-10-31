@@ -48,7 +48,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<CharacterSkill>()
             .HasOne(cs => cs.Character)
             .WithMany(c => c.CharacterSkills)
-            .HasForeignKey(cs => cs.CharacterId);
+            .HasForeignKey(cs => cs.CharacterId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Define the relationship from the join table to Skill
         modelBuilder.Entity<CharacterSkill>()

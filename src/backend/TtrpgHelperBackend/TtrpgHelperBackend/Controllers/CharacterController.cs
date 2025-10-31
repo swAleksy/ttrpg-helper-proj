@@ -24,9 +24,8 @@ public class CharacterController : ControllerBase
     
     [Authorize] 
     [HttpPost]
-    public async Task<ActionResult<CharacterReadDto>> CreateCharacter([FromBody] CharacterCreationDto request)
+    public async Task<ActionResult<CharacterDto>> CreateCharacter([FromBody] CharacterDto request)
     {
-       
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
         {
@@ -35,7 +34,7 @@ public class CharacterController : ControllerBase
     
         // 2. Pass the retrieved userId and the DTO to the service
         var newCharacter = await _characterService.CreateCharacter(userId, request);
-        var readDto = new CharacterReadDto()
+        var readDto = new CharacterDto()
         {
             Name = newCharacter.Name,
             RaceId = newCharacter.RaceId,
@@ -55,29 +54,146 @@ public class CharacterController : ControllerBase
     }
     
     [HttpGet("classes")]
-    public async Task<ActionResult<IEnumerable<Class>>> GetClasses()
+    public async Task<ActionResult<IEnumerable<ClassDto>>> GetClasses()
     {
+        var classResponse = new List<ClassDto>();
+        
         var classes = await _context.Classes.ToListAsync();
-        return Ok(classes);
+        foreach (var clss in classes)
+        {
+            ClassDto newClass = new ClassDto()
+            {
+                Id = clss.Id,
+                Name = clss.Name,
+                Description = clss.Description
+            };
+            classResponse.Add(newClass); 
+        }
+        return Ok(classResponse);
     }
     
     [HttpGet("races")]
-    public async Task<ActionResult<IEnumerable<Race>>> GetRaces()
+    public async Task<ActionResult<IEnumerable<RaceDto>>> GetRaces()
     {
+        var racesResponse = new List<RaceDto>();
+        
         var races = await _context.Races.ToListAsync();
-        return Ok(races);
+        foreach (var race in races)
+        {
+            RaceDto newRace = new RaceDto()
+            {
+                Id = race.Id,
+                Name = race.Name,
+                Description = race.Description
+            };
+            racesResponse.Add(newRace); 
+        }
+        return Ok(racesResponse);
     }
     
-    // [HttpGet("backgrounds")]
-    // public async Task<ActionResult<IEnumerable<Background>>> GetBackgrounds()
-    // {
-    //     var bg = await _context.Backgrounds.ToListAsync();
-    //     return Ok(bg);
-    // }
-    [HttpGet("Skills")]
-    public async Task<ActionResult<IEnumerable<Race>>> GetSkills()
+    [HttpGet("backgrounds")]
+    public async Task<ActionResult<IEnumerable<BackgroundDto>>> GetBackgrounds()
     {
+        var bgResponse = new List<BackgroundDto>();
+        
+        var bgs = await _context.Backgrounds.ToListAsync();
+        foreach (var bg in bgs)
+        {
+            BackgroundDto newBg = new BackgroundDto()
+            {
+                Id = bg.Id,
+                Name = bg.Name,
+                Description = bg.Description
+            };
+            bgResponse.Add(newBg); 
+        }
+        return Ok(bgResponse);
+    }
+    
+    [HttpGet("skills")]
+    public async Task<ActionResult<IEnumerable<SkillDto>>> GetSkills()
+    {
+        var skillResponse = new List<SkillDto>();
+        
         var skills = await _context.Skills.ToListAsync();
-        return Ok(skills);
+        foreach (var skill in skills)
+        {
+            SkillDto newSkill = new SkillDto()
+            {
+                Id = skill.Id,
+                Name = skill.Name,
+                Description = skill.Description
+            };
+            skillResponse.Add(newSkill); 
+        }
+        return Ok(skillResponse);
+    }
+
+    [Authorize]
+    [HttpGet("AllCharacters")]
+    public async Task<ActionResult<IEnumerable<Character>>> GetAllCharacters()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return Unauthorized("User ID not found in token.");
+        }
+
+        // Fetch all characters for this user
+        var characters = await _context.Characters
+            .Where(c => c.UserId == userId)
+            .Include(c => c.CharacterSkills)
+            .ToListAsync();
+
+        var charactersResponse = characters.Select(c => new CharacterDto()
+        {
+            Name = c.Name,
+            RaceId = c.RaceId,
+            ClassId = c.ClassId,
+            BackgroundId = c.BackgroundId,
+            Level = c.Level,
+            Strength = c.Strength,
+            Dexterity = c.Dexterity,
+            Constitution = c.Constitution,
+            Intelligence = c.Intelligence,
+            Wisdom = c.Wisdom,
+            Charisma = c.Charisma,
+            CharacterSkillsIds = c.CharacterSkills.Select(cs => cs.SkillId).ToList()
+        }).ToList();
+        
+        return Ok(charactersResponse);
+    }
+
+    [Authorize]
+    [HttpPut("UpdateCharacter/{id}")]
+
+    public async Task<IActionResult> UpdateCharacter(int id, [FromBody] CharacterDto request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        {
+            return Unauthorized("User ID not found in token.");
+        }
+    
+        // 2. Pass the retrieved userId and the DTO to the service
+        var characterUpdate = await _characterService.UpdateCharacter(id, userId, request);
+        if (characterUpdate == null)
+            return NotFound("Character not found or does not belong to this user.");
+        return Ok("Successfully updated the character");
+    }
+    
+    [Authorize]
+    [HttpDelete("DeleteCharacter/{id}")]
+    public async Task<IActionResult> DeleteCharacter(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            return Unauthorized();
+
+        var deleted = await _characterService.DeleteCharacter(id, userId);
+
+        if (!deleted) return NotFound("Character not found.");
+
+        return Ok("Character deleted successfully.");
     }
 }
