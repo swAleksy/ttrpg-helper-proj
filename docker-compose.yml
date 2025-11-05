@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:17
+    container_name: ttrpg_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: inz12345
+      POSTGRES_DB: ttrpg_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # optional, so you can connect from local tools like pgAdmin
+    healthcheck: #
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ttrpg_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      
   backend-api:
     build:
       context: ./src/backend/TtrpgHelperBackend
@@ -9,21 +26,11 @@ services:
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Default=Host=postgres;Port=5432;Username=postgres;Password=inz12345;Database=ttrpg_db
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=ttrpg_db;Username=postgres;Password=inz12345
     depends_on:
-      - postgres
+          postgres: 
+            condition: service_healthy
       
-  postgres:
-    image: postgres:latest
-    container_name: ttrpg_postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: inz12345
-      POSTGRES_DB: ttrpg_db
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432" # optional, so you can connect from local tools like pgAdmin
 
   frontend-app:
     build:
