@@ -44,7 +44,7 @@ public class Program
                 };
             });
         
-        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
 
         
@@ -55,6 +55,8 @@ public class Program
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.Migrate();
         }
+        
+        app.UseStaticFiles();
         
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

@@ -10,19 +10,19 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace TtrpgHelperBackend.Services;
 
-public interface IAuthService
+public interface IUserService
 {
     Task<User?> Register(UserRegisterDto request);
     Task<string?> Login(UserLoginDto request);
     
 }
 
-public class AuthService : IAuthService
+public class UserService : IUserService
 {
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
 
-    public AuthService(IConfiguration configuration, ApplicationDbContext context)
+    public UserService(IConfiguration configuration, ApplicationDbContext context)
     {
         _configuration = configuration;
         _context = context;

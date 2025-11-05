@@ -22,4 +22,6 @@ public class User
     public byte[] PasswordSalt { get; set; } = new byte[0];
     
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+    public string AvatarUrl { get; set; } = "/uploads/avatars/default.jpeg";
 }
