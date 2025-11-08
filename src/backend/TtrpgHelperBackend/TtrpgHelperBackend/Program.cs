@@ -46,6 +46,7 @@ public class Program
         
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
+        builder.Services.AddScoped<IDashboardService, DashboardService>();
 
         
         var app = builder.Build();  
