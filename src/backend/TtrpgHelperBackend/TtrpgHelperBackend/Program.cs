@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using TtrpgHelperBackend.MessagesAndNotofications;
 using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend;
@@ -42,12 +43,27 @@ public class Program
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!)),
                     ValidateIssuerSigningKey = true
                 };
+                
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
         
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
 
-        
+        builder.Services.AddSignalR();
+
         var app = builder.Build();  
         
         using (var scope = app.Services.CreateScope())
@@ -57,7 +73,8 @@ public class Program
         }
         
         app.UseStaticFiles();
-        
+        app.MapHub<ChatHub>("/chatHub");
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

@@ -20,7 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Race> Races { get; set; }
     public DbSet<Class> Classes { get; set; }
     public DbSet<Background> Backgrounds { get; set; }
-    
+    public DbSet<ChatMessage> ChatMessages { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserRole>()
