@@ -20,7 +20,7 @@ public class SessionController : ControllerBase
                 _context = context;
         }
         
-        // GET: api/session/{id}
+        // GET
         [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<GetSessionDto>> Get(int id)
@@ -32,7 +32,7 @@ public class SessionController : ControllerBase
             return Ok(session);
         }
         
-        // GET: api/session
+        // GET
         [Authorize]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SummarizeSessionDto>>> GetAll()
@@ -42,7 +42,7 @@ public class SessionController : ControllerBase
             return Ok(sessions);
         }
         
-        // POST: api/session
+        // POST
         [HttpPost]
         public async Task<ActionResult<GetSessionDto>> Create([FromBody] CreateSessionDto dto)
         {
@@ -51,7 +51,7 @@ public class SessionController : ControllerBase
             return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
         }
         
-        // PUT: api/session/{id}
+        // PUT
         [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<GetSessionDto>> Update(int id, [FromBody] UpdateSessionDto dto)
@@ -65,7 +65,7 @@ public class SessionController : ControllerBase
             return Ok(updated);
         }
         
-        // DELETE: api/session/{id}
+        // DELETE
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
@@ -77,7 +77,7 @@ public class SessionController : ControllerBase
             return NoContent();
         }
         
-        // POST: api/session/{sessionId}/players/{playerId}
+        // POST
         [Authorize]
         [HttpPost("{sessionId}/players/{playerId}")]
         public async Task<ActionResult<GetSessionDto>> AddPlayer(int sessionId, int playerId)

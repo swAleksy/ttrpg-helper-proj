@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.MessagesAndNotofications;
 using TtrpgHelperBackend.Services;
+using TtrpgHelperBackend.Services.Session;
 
 namespace TtrpgHelperBackend;
 
@@ -16,7 +18,14 @@ public class Program
         
         // Add services to the container.
         builder.Services.AddAuthorization();
-
+        
+        // na razie testowo
+        // do helpera Userowego
+        // chodzi o to żeby mieć uniwersalną klasę
+        // z metodami do pozyskiwania wartości zamiast ciągle
+        // pisać to samo w różnych klasach
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<UserHelper>();
         
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
@@ -62,6 +71,7 @@ public class Program
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
         builder.Services.AddScoped<IDashboardService, DashboardService>();
+        builder.Services.AddScoped<ICampaignService, CampaignService>();
 
         builder.Services.AddSignalR();
 

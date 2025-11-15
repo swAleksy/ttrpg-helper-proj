@@ -19,4 +19,7 @@ public class CreateSessionDto
 
     [Required]
     public int GameMasterId { get; set; }
+    
+    [Required]
+    public int CampaignId { get; set; }
 }

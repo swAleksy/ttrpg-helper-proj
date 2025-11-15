@@ -59,6 +59,7 @@ public class SessionService : ISessionService
             ScheduledDate = dto.ScheduledDate,
             Status = dto.Status,
             GameMasterId = dto.GameMasterId,
+            CampaignId = dto.CampaignId
         };
         
         _db.Sessions.Add(session);
