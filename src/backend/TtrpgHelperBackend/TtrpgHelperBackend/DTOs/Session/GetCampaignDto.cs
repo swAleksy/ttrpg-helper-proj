@@ -8,5 +8,5 @@ public class GetCampaignDto
     
     public string? Description { get; set; }
     
-    public IEnumerable<SummarizeSessionDto> Sessions { get; set; } = new List<SummarizeSessionDto>();
+    public IEnumerable<GetSessionDto> Sessions { get; set; } = new List<GetSessionDto>();
 }

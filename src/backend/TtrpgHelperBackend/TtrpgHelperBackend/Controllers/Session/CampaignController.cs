@@ -6,50 +6,52 @@ using TtrpgHelperBackend.Helpers;
 
 namespace TtrpgHelperBackend.Controllers.Session;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class CampaignController : ControllerBase
 {
     private readonly ICampaignService _campaignService;
-    private readonly ApplicationDbContext _context;
     private readonly UserHelper _userHelper;
 
-    public CampaignController(ICampaignService campaignService,  ApplicationDbContext context, UserHelper userHelper)
+    public CampaignController(ICampaignService campaignService, UserHelper userHelper)
     {
         _campaignService = campaignService;
-        _context = context;
         _userHelper = userHelper;
     }
 
     // GET one specified campaign of GM 
-    [Authorize]
-    [HttpGet("gm/{id}/{gameMasterId}")]
-    public async Task<ActionResult<GetCampaignDto?>> GetCampaign(int id, int gameMasterId)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetCampaignDto?>> GetCampaign(int id)
     {
-        var campaign = await _campaignService.GetCampaign(id, gameMasterId);
-        if (campaign == null) return NotFound();
+        var gameMasterId = _userHelper.GetUserId();
+        if (gameMasterId == null) return Unauthorized("User ID not found in token.");
+        
+        var campaign = await _campaignService.GetCampaign(id);
+        if (campaign == null) return NotFound("Campaign not found.");
         
         return Ok(campaign);
     }
     
     // GET all campaigns of GM
-    [Authorize]
-    [HttpGet("gm/{gameMasterId}")]
-    public async Task<ActionResult<IEnumerable<GetCampaignDto>>> GetCampaigns(int gameMasterId)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetCampaignDto>>> GetCampaigns()
     {
-        var campaigns = await _campaignService.GetCampaigns(gameMasterId);
+        var gameMasterId = _userHelper.GetUserId();
+        if (gameMasterId == null) return Unauthorized("User ID not found in token.");
+        
+        var campaigns = await _campaignService.GetCampaigns();
         
         return Ok(campaigns);
     }
     
     // POST
-    [Authorize]
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<ActionResult<GetCampaignDto>> CreateCampaign([FromBody] CreateCampaignDto dto)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
-
+    
         var newCampaign = await _campaignService.CreateCampaign(new CreateCampaignDto
         {
             Name = dto.Name,
@@ -61,13 +63,21 @@ public class CampaignController : ControllerBase
     }
     
     // DELETE
-    [Authorize]
-    [HttpDelete("{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteCampaign(int id)
     {
         var deleted = await _campaignService.DeleteCampaign(id);
         if (!deleted) return NotFound("Campaign not found.");
             
         return Ok("Campaign deleted successfully.");
+    }
+    
+    // POST
+    [HttpPost("archive/{id}")]
+    public async Task<IActionResult> ArchiveCampaign(int id)
+    {
+        if (!await _campaignService.ArchiveCampaign(id)) return NotFound("Campaign not found.");
+        
+        return Ok("Campaign archived successfully.");
     }
 }

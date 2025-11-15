@@ -89,6 +89,12 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SessionPlayer>()
             .HasIndex(sp => new { sp.SessionId, sp.PlayerId })
             .IsUnique();
+        
+        modelBuilder.Entity<Campaign>()
+            .HasMany(c => c.Sessions)
+            .WithOne(s => s.Campaign)
+            .HasForeignKey(s => s.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
         // -- SESSION  --
         
         modelBuilder.Entity<Class>().HasData(

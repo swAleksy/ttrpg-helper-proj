@@ -37,6 +37,4 @@ public class Session
     
     [InverseProperty(nameof(SessionPlayer.Session))]
     public ICollection<SessionPlayer> Players  { get; set; } = new List<SessionPlayer>();
-    
-    //todo - czy nie byłoby dobrze dodać jeszcze CreatedAt oraz UpdatedAt ?
 }

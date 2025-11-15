@@ -1,91 +1,79 @@
-﻿
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TtrpgHelperBackend.DTOs.Session;
 using TtrpgHelperBackend.Services.Session;
 
 namespace TtrpgHelperBackend.Controllers.Session;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SessionController : ControllerBase
 {
-        private readonly ISessionService _sessionService;
-        private readonly ApplicationDbContext _context;
+    private readonly ISessionService _sessionService;
 
-        public SessionController(ISessionService sessionService, ApplicationDbContext context)
-        {
-                _sessionService = sessionService;
-                _context = context;
-        }
+    public SessionController(ISessionService sessionService)
+    {
+        _sessionService = sessionService;
+    }
         
-        // GET
-        [Authorize]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<GetSessionDto>> Get(int id)
-        {
-            var session = await _sessionService.GetOneSession(id);
-
-            if (session == null) return NotFound();
-
-            return Ok(session);
-        }
+    // GET one specified session of GM
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetSessionDto>> GetSession(int id)
+    {
+        var session = await _sessionService.GetSession(id);
+        if (session == null) return NotFound();
+    
+        return Ok(session);
+    }
         
-        // GET
-        [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<SummarizeSessionDto>>> GetAll()
-        {
-            var sessions = await _sessionService.GetAllSessions();
+    // GET all sessions of GM
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetSessionDto>>> GetSessions()
+    {
+        var sessions = await _sessionService.GetSessions();
             
-            return Ok(sessions);
-        }
+        return Ok(sessions);
+    }
         
-        // POST
-        [HttpPost]
-        public async Task<ActionResult<GetSessionDto>> Create([FromBody] CreateSessionDto dto)
-        {
-            var created = await _sessionService.CreateSession(dto);
-            
-            return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
-        }
+    // POST
+    [HttpPost("create")]
+    public async Task<ActionResult<GetSessionDto>> CreateSession([FromBody] CreateSessionDto dto)
+    {
+        var newSession = await _sessionService.CreateSession(dto);
         
-        // PUT
-        [Authorize]
-        [HttpPut("{id}")]
-        public async Task<ActionResult<GetSessionDto>> Update(int id, [FromBody] UpdateSessionDto dto)
-        {
-            if (id != dto.Id) return BadRequest("ID in URL does not match ID in body");
-            
-            var updated = await _sessionService.UpdateSession(dto);
-            
-            if (updated == null) return NotFound();
-            
-            return Ok(updated);
-        }
+        return Ok(newSession);
+    }
         
-        // DELETE
-        [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(int id)
-        {
-            var deleted = await _sessionService.DeleteSession(id);
-            
-            if (!deleted) return NotFound();
-            
-            return NoContent();
-        }
+    // PUT
+    [HttpPut("update/{id}")]
+    public async Task<ActionResult<GetSessionDto>> UpdateSession(int id, [FromBody] UpdateSessionDto dto)
+    {
+        if (id != dto.Id) return BadRequest();
         
-        // POST
-        [Authorize]
-        [HttpPost("{sessionId}/players/{playerId}")]
-        public async Task<ActionResult<GetSessionDto>> AddPlayer(int sessionId, int playerId)
-        {
-            var updatedSession = await _sessionService.AddPlayer(sessionId, playerId);
-            
-            if (updatedSession == null) return NotFound();
-            
-            return Ok(updatedSession);
-        }
+        var updatedSession = await _sessionService.UpdateSession(dto);
+        if (updatedSession == null) return NotFound("Session not found.");
+        
+        return Ok(updatedSession);
+    }
+        
+    // DELETE
+    [HttpDelete("delete/{id}")]
+    public async Task<ActionResult> DeleteSession(int id)
+    {
+        var deleted = await _sessionService.DeleteSession(id);
+        if (!deleted) return NotFound("Session not found");
+        
+        return Ok("Character deleted successfully.");
+    }
+    
+    // POST
+    [HttpPost("addPlayer/{sessionId}/{playerId}")]
+    public async Task<ActionResult<GetSessionDto>> AddPlayer(int sessionId, int playerId)
+    {
+        var updatedSession = await _sessionService.AddPlayer(sessionId, playerId);
+        if (updatedSession == null) return NotFound("Session not found.");
+        
+        return Ok(updatedSession);
+    }
 }

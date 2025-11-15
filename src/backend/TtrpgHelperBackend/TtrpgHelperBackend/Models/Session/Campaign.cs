@@ -26,11 +26,11 @@ public class Campaign
     public User GameMaster { get; set; } = null!;
     
     public ICollection<Session> Sessions { get; set; } = new  List<Session>();
-    
-    [Required]
-    [DataType(DataType.Date)]
-    public DateTime Created { get; set; } =  DateTime.Now;
-    
-    [DataType(DataType.Date)]
-    public DateTime? Updated { get; set; }
+
+    // [Required]
+    // [DataType(DataType.Date)]
+    // public DateTime Created { get; set; } =  DateTime.Now;
+
+    // [DataType(DataType.Date)]
+    // public DateTime? Updated { get; set; }
 }
