@@ -21,10 +21,14 @@ public class ApplicationDbContext : DbContext
     public DbSet<Race> Races { get; set; }
     public DbSet<Class> Classes { get; set; }
     public DbSet<Background> Backgrounds { get; set; }
+<<<<<<< HEAD
     
     public DbSet<Session> Sessions { get; set; }
     public DbSet<SessionPlayer> SessionPlayers { get; set; }
     
+=======
+    public DbSet<ChatMessage> ChatMessages { get; set; }
+>>>>>>> main
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserRole>()
