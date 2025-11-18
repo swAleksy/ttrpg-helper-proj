@@ -25,14 +25,8 @@ public class Session
     public string Status { get; set; } = string.Empty;
     
     [Required]
-    [ForeignKey(nameof(User))]
-    public int GameMasterId { get; set; }
-    public User GameMaster { get; set; } =  null!;
-    
-    [Required]
     [ForeignKey(nameof(Campaign))]
     public int CampaignId { get; set; }
-
     public Campaign Campaign { get; set; } = null!;
     
     [InverseProperty(nameof(SessionPlayer.Session))]

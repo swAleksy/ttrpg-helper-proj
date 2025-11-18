@@ -72,6 +72,7 @@ public class Program
         builder.Services.AddScoped<ICharacterService, CharacterService>();
         builder.Services.AddScoped<IDashboardService, DashboardService>();
         builder.Services.AddScoped<ICampaignService, CampaignService>();
+        builder.Services.AddScoped<ISessionService, SessionService>();
 
         builder.Services.AddSignalR();
 

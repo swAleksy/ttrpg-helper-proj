@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TtrpgHelperBackend.DTOs.Session;
+﻿namespace TtrpgHelperBackend.DTOs.Session;
 
 public class GetSessionDto
 {
@@ -14,15 +12,5 @@ public class GetSessionDto
 
     public string Status { get; set; } = string.Empty;
 
-    public int GameMasterId { get; set; }
-
-    public string GameMasterName { get; set; } = string.Empty;
-
     public IEnumerable<SessionPlayerDto> Players { get; set; } = new List<SessionPlayerDto>();
-}
-
-public class SessionPlayerDto
-{
-    public int PlayerId { get; set; }
-    public string PlayerName { get; set; } = string.Empty;
 }

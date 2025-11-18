@@ -16,9 +16,6 @@ public class CreateSessionDto
     
     [MaxLength(20)]
     public string Status { get; set; } = "Planned";
-
-    [Required]
-    public int GameMasterId { get; set; }
     
     [Required]
     public int CampaignId { get; set; }

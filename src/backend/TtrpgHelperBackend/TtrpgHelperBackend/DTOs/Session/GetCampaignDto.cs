@@ -8,5 +8,9 @@ public class GetCampaignDto
     
     public string? Description { get; set; }
     
+    public int GameMasterId { get; set; }
+    
+    public string GameMasterName { get; set; } = "";
+    
     public IEnumerable<GetSessionDto> Sessions { get; set; } = new List<GetSessionDto>();
 }

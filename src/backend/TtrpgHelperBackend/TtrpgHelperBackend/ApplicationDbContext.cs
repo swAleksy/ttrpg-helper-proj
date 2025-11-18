@@ -68,11 +68,21 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SessionPlayer>().ToTable("SessionPlayers");
         modelBuilder.Entity<Campaign>().ToTable("Campaigns");
         
-        modelBuilder.Entity<Session>()
-            .HasOne(s => s.GameMaster)
+        modelBuilder.Entity<Campaign>()
+            .HasOne(c => c.GameMaster)
             .WithMany()
-            .HasForeignKey(s => s.GameMasterId)
+            .HasForeignKey(c => c.GameMasterId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<Campaign>()
+            .HasMany(c => c.Sessions)
+            .WithOne(s => s.Campaign)
+            .HasForeignKey(s => s.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Session>()
+            .Property(s => s.ScheduledDate)
+            .HasColumnType("timestamp without time zone");
         
         modelBuilder.Entity<SessionPlayer>()
             .HasOne(sp => sp.Session)
@@ -89,12 +99,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<SessionPlayer>()
             .HasIndex(sp => new { sp.SessionId, sp.PlayerId })
             .IsUnique();
-        
-        modelBuilder.Entity<Campaign>()
-            .HasMany(c => c.Sessions)
-            .WithOne(s => s.Campaign)
-            .HasForeignKey(s => s.CampaignId)
-            .OnDelete(DeleteBehavior.Cascade);
         // -- SESSION  --
         
         modelBuilder.Entity<Class>().HasData(
