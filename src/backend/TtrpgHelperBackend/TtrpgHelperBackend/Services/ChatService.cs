@@ -2,7 +2,15 @@
 using TtrpgHelperBackend.Models;
 namespace TtrpgHelperBackend.Services;
 
-public class ChatService
+public interface IChatService
+{
+    Task SavePrivateMessage(string senderId, string receiverId, string content);
+    Task SaveTeamMessage(string senderId, string sessionId, string content);
+    Task<List<ChatMessage>> GetPrivateChatHistory(string userId, string otherUserId);
+    Task<List<ChatMessage>> GetTeamChatHistory(string sessionId);
+}
+
+public class ChatService :  IChatService
 {
     private readonly ApplicationDbContext _context;
 

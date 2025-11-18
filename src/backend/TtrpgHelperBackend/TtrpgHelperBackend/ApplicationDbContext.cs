@@ -21,6 +21,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Class> Classes { get; set; }
     public DbSet<Background> Backgrounds { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserRole>()

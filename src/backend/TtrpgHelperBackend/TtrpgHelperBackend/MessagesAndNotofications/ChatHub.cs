@@ -2,12 +2,20 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
+using TtrpgHelperBackend.Services;
+
 namespace TtrpgHelperBackend.MessagesAndNotofications;
 
 [Authorize]
 public class ChatHub : Hub
 {
     // private static readonly Dictionary<string, string> _connections = new();
+    private readonly ChatService _chatService;
+
+    public ChatHub(ChatService chatService)
+    {
+        _chatService = chatService;
+    }
     
     private string GetUserId()
     {
@@ -36,14 +44,20 @@ public class ChatHub : Hub
     public async Task SendPrivateMessage(string receiverId, string message)
     {
         var senderId =  GetUserId();
+        
+        await _chatService.SavePrivateMessage(senderId, receiverId, message);
+
         // Save to DB via a service or repository
         await Clients.User(receiverId).SendAsync("ReceivePrivateMessage", senderId, message);
         await Clients.User(senderId).SendAsync("ReceivePrivateMessage", senderId, message); // echo to sender
+
     }
 
     public async Task SendTeamMessage(string sessionId, string message)
     {
         var senderId =  GetUserId();
+        
+        await _chatService.SaveTeamMessage(senderId, sessionId, message);
         // Persist message
         await Clients.Group(sessionId).SendAsync("ReceiveTeamMessage", senderId, message);
     }
