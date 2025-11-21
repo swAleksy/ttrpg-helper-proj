@@ -13,8 +13,8 @@ namespace TtrpgHelperBackend.Services;
 public interface IUserService
 {
     Task<User?> Register(UserRegisterDto request);
-    Task<string?> Login(UserLoginDto request);
-    
+    Task<TokenResponseDto?> Login(UserLoginDto request);
+    Task<TokenResponseDto?> RefreshTokens(TokenRefreshDto request);
 }
 
 public class UserService : IUserService
@@ -91,7 +91,7 @@ public class UserService : IUserService
         return newUser;
     }
 
-    public async Task<string?> Login(UserLoginDto request)
+    public async Task<TokenResponseDto?> Login(UserLoginDto request)
     {
         var user = await _context.Users
             .Include(u => u.UserRoles)
@@ -102,10 +102,60 @@ public class UserService : IUserService
             {
                 return null; // Invalid credentials
             }
-
-            return CreateToken(user);
+            
+            return await CreateTokenResponse(user);
     }
 
+    private async Task<TokenResponseDto> CreateTokenResponse(User user)
+    {
+        var response = new TokenResponseDto
+        {
+            Token = CreateToken(user),
+            RefreshToken = await GenerateAndSaveRefreshToken(user)
+        };
+        return response;
+    }
+
+    // private async Task<User?> ValidateRefreshToken(Guid userId, string refreshToken)
+    // {
+    //     var user = await _context.Users.FindAsync(userId);
+    //     if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+    //     {
+    //         return null;
+    //     }
+    //     
+    //     return user;
+    // }
+
+    public async Task<TokenResponseDto?> RefreshTokens(TokenRefreshDto request)
+    {
+        var user = await _context.Users
+            .Include(u => u.UserRoles)
+            .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
+
+        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            return null;
+
+        return await CreateTokenResponse(user);
+    }
+    
+    private string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    private async Task<string> GenerateAndSaveRefreshToken(User user)
+    {
+        var refreshToken = GenerateRefreshToken();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+        await _context.SaveChangesAsync();
+        return refreshToken;
+    }
+    
     private string CreateToken(User user)
     {
         var claims = new List<Claim>

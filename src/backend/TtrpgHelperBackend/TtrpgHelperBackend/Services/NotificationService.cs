@@ -15,9 +15,9 @@ public interface INotificationService
 public class NotificationService : INotificationService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IHubContext<NotificationHub> _hub;
+    private readonly IHubContext<GameSessionHub> _hub;
 
-    public NotificationService(ApplicationDbContext context, IHubContext<NotificationHub> hub)
+    public NotificationService(ApplicationDbContext context, IHubContext<GameSessionHub> hub)
     {
         _context = context;
         _hub = hub;

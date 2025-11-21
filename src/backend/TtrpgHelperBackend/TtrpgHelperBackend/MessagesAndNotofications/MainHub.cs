@@ -7,12 +7,12 @@ using TtrpgHelperBackend.Services;
 namespace TtrpgHelperBackend.MessagesAndNotofications;
 
 [Authorize]
-public class ChatHub : Hub
+public class MainHub : Hub
 {
     // private static readonly Dictionary<string, string> _connections = new();
     private readonly ChatService _chatService;
 
-    public ChatHub(ChatService chatService)
+    public MainHub(ChatService chatService)
     {
         _chatService = chatService;
     }
@@ -45,32 +45,24 @@ public class ChatHub : Hub
     {
         var senderId =  GetUserId();
         
+        // Save to DB via a service or repository
         await _chatService.SavePrivateMessage(senderId, receiverId, message);
 
-        // Save to DB via a service or repository
         await Clients.User(receiverId).SendAsync("ReceivePrivateMessage", senderId, message);
         await Clients.User(senderId).SendAsync("ReceivePrivateMessage", senderId, message); // echo to sender
 
     }
-
-    public async Task SendTeamMessage(string sessionId, string message)
-    {
-        var senderId =  GetUserId();
-        
-        await _chatService.SaveTeamMessage(senderId, sessionId, message);
-        // Persist message
-        await Clients.Group(sessionId).SendAsync("ReceiveTeamMessage", senderId, message);
-    }
-
-    public async Task JoinTeam(string sessionId)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-    }
-
-    public async Task LeaveTeam(string sessionId)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
-    }
     
+    public async Task SendNotification(string userId, string type, string message)
+    {
+        var senderId = GetUserId();
+
+        await Clients.User(userId).SendAsync("ReceiveNotification", new {
+            Type = type,
+            Message = message,
+            FromUser = senderId,
+            Timestamp = DateTime.UtcNow
+        });
+    }
 
 }

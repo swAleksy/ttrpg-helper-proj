@@ -26,10 +26,10 @@ public class ChatController : ControllerBase
     }
 
     // Load team chat history
-    [HttpGet("team/{sessionId}")]
-    public async Task<IActionResult> GetTeamMessages(string sessionId)
+    [HttpGet("session/{sessionId}")]
+    public async Task<IActionResult> GetSessionMessages(string sessionId)
     {
-        var messages = await _chatService.GetTeamChatHistory(sessionId);
+        var messages = await _chatService.GetSessionChatHistory(sessionId);
         return Ok(messages);
     }
     

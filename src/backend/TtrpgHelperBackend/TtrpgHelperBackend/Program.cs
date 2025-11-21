@@ -90,8 +90,8 @@ public class Program
         
         //app.UseHttpsRedirection();
         
-        app.MapHub<ChatHub>("/chatHub");
-        app.MapHub<NotificationHub>("/notificationHub");
+        app.MapHub<MainHub>("/chatHub");
+        app.MapHub<GameSessionHub>("/notificationHub");
 
         app.Run();
     }
