@@ -42,6 +42,7 @@ public class SessionController : ControllerBase
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
 
         var sessions = await _sessionService.GetSessionsForGm(gameMasterId.Value, status);
+        
         return Ok(sessions);
     }
     // -- GAMEMASTER --
@@ -69,6 +70,7 @@ public class SessionController : ControllerBase
         if (playerId == null) return Unauthorized("User ID not found in token.");
 
         var sessions = await _sessionService.GetSessionsForPlayer(playerId.Value, status);
+       
         return Ok(sessions);
     }
     // -- PLAYER --

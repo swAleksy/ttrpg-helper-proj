@@ -31,4 +31,7 @@ public class Session
     
     [InverseProperty(nameof(SessionPlayer.Session))]
     public ICollection<SessionPlayer> Players  { get; set; } = new List<SessionPlayer>();
+    
+    [InverseProperty(nameof(SessionEvent.Session))]
+    public ICollection<SessionEvent> Events { get; set; } = new List<SessionEvent>();
 }

@@ -70,16 +70,13 @@ public class Program
         
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
-<<<<<<< HEAD
         builder.Services.AddScoped<IDashboardService, DashboardService>();
         builder.Services.AddScoped<ICampaignService, CampaignService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
-
-=======
+        
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         
->>>>>>> main
         builder.Services.AddSignalR();
 
         var app = builder.Build();  

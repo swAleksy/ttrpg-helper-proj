@@ -25,6 +25,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Campaign> Campaigns { get; set; }
     public DbSet<SessionPlayer> SessionPlayers { get; set; }
+    public DbSet<SessionEvent> SessionEvents { get; set; }
     
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<Notification> Notifications { get; set; }
@@ -65,43 +66,114 @@ public class ApplicationDbContext : DbContext
             .WithMany(s => s.CharacterSkills)
             .HasForeignKey(cs => cs.SkillId);
         
-        // -- SESSION -- 
-        modelBuilder.Entity<Session>().ToTable("Sessions");
-        modelBuilder.Entity<SessionPlayer>().ToTable("SessionPlayers");
-        modelBuilder.Entity<Campaign>().ToTable("Campaigns");
+        // -- SESSION MODULE --
         
-        modelBuilder.Entity<Campaign>()
-            .HasOne(c => c.GameMaster)
-            .WithMany()
-            .HasForeignKey(c => c.GameMasterId)
-            .OnDelete(DeleteBehavior.Restrict);
+        // -- SESSION --
+        modelBuilder.Entity<Session>(entity =>
+        {
+            entity.ToTable("Sessions");
+
+            entity.Property(s => s.ScheduledDate)
+                .HasColumnType("timestamp without time zone");
+
+            entity.Property(s => s.Name)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(s => s.Description)
+                .HasMaxLength(200);
+
+            entity.Property(s => s.Status)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.HasOne(s => s.Campaign)
+                .WithMany(c => c.Sessions)
+                .HasForeignKey(s => s.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(s => s.Players)
+                .WithOne(sp => sp.Session)
+                .HasForeignKey(sp => sp.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(s => s.Events)
+                .WithOne(se => se.Session)
+                .HasForeignKey(se => se.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
         
-        modelBuilder.Entity<Campaign>()
-            .HasMany(c => c.Sessions)
-            .WithOne(s => s.Campaign)
-            .HasForeignKey(s => s.CampaignId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // -- CAMPAIGN --
+        modelBuilder.Entity<Campaign>(entity =>
+        {
+            entity.ToTable("Campaigns");
+
+            entity.Property(c => c.Name)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(c => c.Description)
+                .HasMaxLength(1000);
+
+            entity.Property(c => c.Status)
+                .HasMaxLength(30)
+                .IsRequired();
+
+            entity.HasOne(c => c.GameMaster)
+                .WithMany()
+                .HasForeignKey(c => c.GameMasterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasMany(c => c.Sessions)
+                .WithOne(s => s.Campaign)
+                .HasForeignKey(s => s.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
         
-        modelBuilder.Entity<Session>()
-            .Property(s => s.ScheduledDate)
-            .HasColumnType("timestamp without time zone");
+        // -- SESSION PLAYER --
+        modelBuilder.Entity<SessionPlayer>(entity =>
+        {
+            entity.ToTable("SessionPlayers");
+
+            entity.HasOne(sp => sp.Session)
+                .WithMany(s => s.Players)
+                .HasForeignKey(sp => sp.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(sp => sp.Player)
+                .WithMany()
+                .HasForeignKey(sp => sp.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(sp => new { sp.SessionId, sp.PlayerId })
+                .IsUnique();
+        });
         
-        modelBuilder.Entity<SessionPlayer>()
-            .HasOne(sp => sp.Session)
-            .WithMany(s => s.Players)
-            .HasForeignKey(sp => sp.SessionId)
-            .OnDelete(DeleteBehavior.Cascade);
+        // -- SESSION EVENT --
+        modelBuilder.Entity<SessionEvent>(entity =>
+        {
+            entity.ToTable("SessionEvents");
+
+            entity.HasOne(e => e.Session)
+                .WithMany(s => s.Events)
+                .HasForeignKey(e => e.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.Timestamp)
+                .HasColumnType("timestamp without time zone")
+                .IsRequired();
+        });
         
-        modelBuilder.Entity<SessionPlayer>()
-            .HasOne(sp => sp.Player)
-            .WithMany()
-            .HasForeignKey(sp => sp.PlayerId)
-            .OnDelete(DeleteBehavior.Cascade);
-        
-        modelBuilder.Entity<SessionPlayer>()
-            .HasIndex(sp => new { sp.SessionId, sp.PlayerId })
-            .IsUnique();
-        // -- SESSION  --
+        // -- SESSION MODULE --
         
         modelBuilder.Entity<Class>().HasData(
             new Class { Id = 1,  Name = "Barbarian",   Description = "A fierce warrior of primal strength and rage." },
