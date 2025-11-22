@@ -24,4 +24,7 @@ public class User
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
     public string AvatarUrl { get; set; } = "/uploads/avatars/default.jpeg";
+    
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpiryTime { get; set; }
 }

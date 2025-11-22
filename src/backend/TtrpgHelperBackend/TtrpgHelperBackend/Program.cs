@@ -59,7 +59,7 @@ public class Program
                     {
                         var accessToken = context.Request.Query["access_token"].FirstOrDefault();
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
                         {
                             context.Token = accessToken;
                         }
@@ -70,10 +70,16 @@ public class Program
         
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ICharacterService, CharacterService>();
+<<<<<<< HEAD
         builder.Services.AddScoped<IDashboardService, DashboardService>();
         builder.Services.AddScoped<ICampaignService, CampaignService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
 
+=======
+        builder.Services.AddScoped<IChatService, ChatService>();
+        builder.Services.AddScoped<INotificationService, NotificationService>();
+        
+>>>>>>> main
         builder.Services.AddSignalR();
 
         var app = builder.Build();  
@@ -85,19 +91,23 @@ public class Program
         }
         
         app.UseStaticFiles();
-        app.MapHub<ChatHub>("/chatHub");
-
+        
+        app.UseAuthentication();
+        app.UseAuthorization();
+        
         // Configure the HTTP request pipeline.
+        app.MapControllers();
+
         if (app.Environment.IsDevelopment())
         {
-            app.MapControllers();
             app.MapOpenApi(); // Serves the OpenAPI spec at /openapi/v1.json
             app.MapScalarApiReference();
         }
         
         //app.UseHttpsRedirection();
-        app.UseAuthentication();
-        app.UseAuthorization();
+        
+        app.MapHub<MainHub>("/chatHub");
+        app.MapHub<GameSessionHub>("/notificationHub");
 
         app.Run();
     }

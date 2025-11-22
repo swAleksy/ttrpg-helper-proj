@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TtrpgHelperBackend;
@@ -11,9 +12,11 @@ using TtrpgHelperBackend;
 namespace TtrpgHelperBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118202538_10")]
+    partial class _10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,12 +79,6 @@ namespace TtrpgHelperBackend.Migrations
                         .IsRequired()
                         .HasColumnType("bytea");
 
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -132,7 +129,7 @@ namespace TtrpgHelperBackend.Migrations
                         {
                             Id = 1,
                             Description = "Dawno dawno temu w dupe",
-                            Name = "Brakowalo tego :)"
+                            Name = ""
                         });
                 });
 
@@ -471,97 +468,6 @@ namespace TtrpgHelperBackend.Migrations
                         });
                 });
 
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("GameMasterId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameMasterId");
-
-                    b.ToTable("Campaigns", (string)null);
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Session", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CampaignId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<DateTime>("ScheduledDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CampaignId");
-
-                    b.ToTable("Sessions", (string)null);
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.SessionPlayer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SessionId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId");
-
-                    b.HasIndex("SessionId", "PlayerId")
-                        .IsUnique();
-
-                    b.ToTable("SessionPlayers", (string)null);
-                });
-
             modelBuilder.Entity("TtrpgHelperBackend.Models.Skill", b =>
                 {
                     b.Property<int>("Id")
@@ -766,47 +672,6 @@ namespace TtrpgHelperBackend.Migrations
                     b.Navigation("Skill");
                 });
 
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
-                {
-                    b.HasOne("TtrpgHelperBackend.Models.Authentication.User", "GameMaster")
-                        .WithMany()
-                        .HasForeignKey("GameMasterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("GameMaster");
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Session", b =>
-                {
-                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
-                        .WithMany("Sessions")
-                        .HasForeignKey("CampaignId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Campaign");
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.SessionPlayer", b =>
-                {
-                    b.HasOne("TtrpgHelperBackend.Models.Authentication.User", "Player")
-                        .WithMany()
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TtrpgHelperBackend.Models.Session.Session", "Session")
-                        .WithMany("Players")
-                        .HasForeignKey("SessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-
-                    b.Navigation("Session");
-                });
-
             modelBuilder.Entity("TtrpgHelperBackend.Models.Authentication.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -835,16 +700,6 @@ namespace TtrpgHelperBackend.Migrations
             modelBuilder.Entity("TtrpgHelperBackend.Models.Race", b =>
                 {
                     b.Navigation("Characters");
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
-                {
-                    b.Navigation("Sessions");
-                });
-
-            modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Session", b =>
-                {
-                    b.Navigation("Players");
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Skill", b =>

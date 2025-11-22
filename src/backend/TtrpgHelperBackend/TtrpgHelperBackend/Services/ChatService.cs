@@ -2,7 +2,15 @@
 using TtrpgHelperBackend.Models;
 namespace TtrpgHelperBackend.Services;
 
-public class ChatService
+public interface IChatService
+{
+    Task SavePrivateMessage(string senderId, string receiverId, string content);
+    Task SaveSessionMessage(string senderId, string sessionId, string content);
+    Task<List<ChatMessage>> GetPrivateChatHistory(string userId, string otherUserId);
+    Task<List<ChatMessage>> GetSessionChatHistory(string sessionId);
+}
+
+public class ChatService :  IChatService
 {
     private readonly ApplicationDbContext _context;
 
@@ -23,7 +31,7 @@ public class ChatService
         await _context.SaveChangesAsync();
     }
 
-    public async Task SaveTeamMessage(string senderId, string sessionId, string content)
+    public async Task SaveSessionMessage(string senderId, string sessionId, string content)
     {
         var msg = new ChatMessage
         {
@@ -44,7 +52,7 @@ public class ChatService
             .ToListAsync();
     }
 
-    public async Task<List<ChatMessage>> GetTeamChatHistory(string sessionId)
+    public async Task<List<ChatMessage>> GetSessionChatHistory(string sessionId)
     {
         return await _context.ChatMessages
             .Where(m => m.SessionId == sessionId)
