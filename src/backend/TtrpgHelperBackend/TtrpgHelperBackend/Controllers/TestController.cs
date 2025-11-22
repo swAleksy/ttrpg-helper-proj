@@ -8,9 +8,9 @@ namespace TtrpgHelperBackend.Controllers;
 [Route("api/test")]
 public class TestController : ControllerBase
 {
-    private readonly IHubContext<ChatHub> _hub;
+    private readonly IHubContext<MainHub> _hub;
 
-    public TestController(IHubContext<ChatHub> hub)
+    public TestController(IHubContext<MainHub> hub)
     {
         _hub = hub;
     }

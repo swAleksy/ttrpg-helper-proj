@@ -37,19 +37,29 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserLoginDto request)
+    public async Task<ActionResult<TokenResponseDto>> Login(UserLoginDto request)
     {
-            var token = await _userService.Login(request);
+            var result = await _userService.Login(request);
 
-            if (token == null)
+            if (result == null)
             {
-                return Unauthorized(new { Message = "Invalid username or password." });
+                return Unauthorized(new { Message = "Invalid username or password." }); 
             }
 
             // Return the (placeholder) token
-            return Ok(new { Token = token });
+            return Ok(result);
     }
 
+    [HttpPost("refresh-token")]
+    public async Task<ActionResult<TokenResponseDto>> RefreshToken(TokenRefreshDto request)
+    {
+        var result = await _userService.RefreshTokens(request);
+        if (result == null || result.Token == null || result.RefreshToken == null)
+        {
+            return Unauthorized(new { error = "Invalid token or password." });
+        }
+        return Ok(result);
+    }
     [Authorize]
     [HttpPut("UpdateUser")]
     public async Task<IActionResult> UpdateUser([FromBody] UserRegisterDto request)
