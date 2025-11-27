@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj": {}
+    "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj": {
+    "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
+        "projectUniqueName": "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
         "projectName": "TtrpgHelperBackend",
-        "projectPath": "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
+        "projectPath": "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
         "packagesPath": "C:\\Users\\ACME\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\obj\\",
+        "outputPath": "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -110,7 +110,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

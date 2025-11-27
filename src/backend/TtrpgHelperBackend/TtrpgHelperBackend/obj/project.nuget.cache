@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "5KwUtG9iRks=",
+  "dgSpecHash": "ODmSWAl86yg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ACME\\Desktop\\New folder\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
+  "projectFilePath": "C:\\Users\\ACME\\Desktop\\ttrpg-helper-proj\\src\\backend\\TtrpgHelperBackend\\TtrpgHelperBackend\\TtrpgHelperBackend.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ACME\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\ACME\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\9.0.10\\microsoft.aspnetcore.authentication.jwtbearer.9.0.10.nupkg.sha512",
