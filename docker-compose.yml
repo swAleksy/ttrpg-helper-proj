@@ -34,17 +34,17 @@ services:
 
   frontend-app:
     build:
-      context: ./src/frontend/ttrpg-helper-frontend
+      context: ./src/frontend/vue-ttrpg-front
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "5173:5173"
     environment:
-      - REACT_APP_API_URL=http://backend-api:8080
+      - VITE_API_URL=http://backend-api:8080 # <-- NEW VITE/VUE VARIABLE
     depends_on:
       - backend-api
     volumes:
-      - ./src/frontend/ttrpg-helper-frontend:/app
+      - ./src/frontend/vue-ttrpg-front:/app
       - /app/node_modules
-      
+
 volumes:
   pg_data:

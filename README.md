@@ -57,3 +57,27 @@ Aby zastosować zmiany w kodzie i przebudować kontener:
 #### B. Dokumentacja API
 Po pomyślnym uruchomieniu kontenera **backend-api**, pełną dokumentację do endpointów (Scalar) znajdziesz pod adresem:
 http://localhost:8080/scalar/v1
+
+***
+
+### 4. Dodatkowe Informacje i Workflow
+Info na temat frontu 
+
+1. Front jest udostępniany z dockera na porcie 5173
+2. Ogólnie przez dockera i sposób jak to współdziała z projektem frontowym po sklonowaniu projektu i zbudowaniu go w dockerze nalezy wejść do projektu frontu (tj **ttrpg-helper-proj\src\frontend\vue-ttrpg-front** i użyc komendy *
+	```bash	
+	npm install
+	```	
+	Bez wykonania tego kroku VSC będzie sypał nam błędami o braku pakietów 
+3.  z tego samego powodu co w/w żeby dodać jakąkolwiek dependencje trzeba
+	- w głównym folderze projektu w terminalu z uruchomionym projektem, zainstalować pakiet "dla dockera"
+	```bash	
+	docker compose exec frontend-app npm install [nazwa_pakietu]
+	```
+	- potem w folderze projektu frontu czyli **ttrpg-helper-proj\src\frontend\vue-ttrpg-front** zaciągnąć pakiety dla windowsa
+	```bash	
+	npm install
+	```	
+4. Zaleca się doinstalować wtyczki dla VUE w VSC 
+
+* jest to spowodowane tym że docker przechowuje pliki pakietów w osobnym "wewnętrznym folderze", pliki pakietów nie są "wymienne" między windowsem a linuxem (na którym działa docker),
