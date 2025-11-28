@@ -35,9 +35,9 @@ public class SessionService : ISessionService
     {
         var session = await _db.Sessions
             .Include(s => s.Campaign)
-            .ThenInclude(c => c.GameMaster)
+                .ThenInclude(c => c.GameMaster)
             .Include(s => s.Players)
-            .ThenInclude(sp => sp.Player)
+                .ThenInclude(sp => sp.Player)
             .FirstOrDefaultAsync(s => s.Id == id && s.Campaign.GameMasterId == gameMasterId);
 
         return session == null ? null : Dto(session);
