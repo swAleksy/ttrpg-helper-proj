@@ -1,4 +1,6 @@
-﻿namespace TtrpgHelperBackend.DTOs.Resource;
+﻿using TtrpgHelperBackend.Models;
+
+namespace TtrpgHelperBackend.DTOs.Resource;
 
 public class GetScenarioNpcDto
 {
@@ -12,7 +14,7 @@ public class GetScenarioNpcDto
 
     public string Race { get; set; } = string.Empty;
     
-    public string Class { get; set; } = string.Empty;
+    public string Class { get; set; }  = string.Empty;
     
     public int Level { get; set; }
     

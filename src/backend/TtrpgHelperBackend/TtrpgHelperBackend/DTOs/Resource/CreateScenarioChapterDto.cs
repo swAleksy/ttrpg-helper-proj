@@ -2,15 +2,14 @@
 
 namespace TtrpgHelperBackend.DTOs.Resource;
 
-public class CreateScenarioDto
+public class CreateScenarioChapterDto
 {
     [Required]
-    public int CampaignId { get; set; }
+    public int ScenarioId { get; set; }
     
     [Required]
     [MaxLength(50)]
     public string Name { get; set; } = string.Empty;
     
-    [MaxLength(200)]
-    public string? Description { get; set; } = string.Empty;
+    public string ContentMarkdown { get; set; } = string.Empty;
 }

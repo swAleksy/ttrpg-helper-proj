@@ -20,7 +20,7 @@ public class ScenarioConfiguration : IEntityTypeConfiguration<Scenario>
             .HasMaxLength(200);
 
         entity.HasOne(s => s.Campaign)
-            .WithMany(c => c.Scenarios!)
+            .WithMany(c => c.Scenarios)
             .HasForeignKey(s => s.CampaignId)
             .OnDelete(DeleteBehavior.Cascade);
 
