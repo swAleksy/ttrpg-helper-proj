@@ -10,7 +10,7 @@ public interface INoteService
     Task<IEnumerable<GetScenarioNoteDto>> GetNotes(int campaignId, int gameMasterId);
     Task<GetScenarioNoteDto?> CreateNote(CreateNoteDto dto, int gameMasterId);
     Task<GetScenarioNoteDto?> UpdateNote(UpdateNoteDto dto, int gameMasterId);
-    Task<bool> DeleteScenarioNote(int noteId, int gameMasterId);
+    Task<bool> DeleteNote(int noteId, int gameMasterId);
 }
 
 public class NoteService :  INoteService
@@ -76,7 +76,7 @@ public class NoteService :  INoteService
         return Dto(note);
     }
 
-    public async Task<bool> DeleteScenarioNote(int noteId, int gameMasterId)
+    public async Task<bool> DeleteNote(int noteId, int gameMasterId)
     {
         var note = await _db.Notes
             .Include(n => n.Campaign)
