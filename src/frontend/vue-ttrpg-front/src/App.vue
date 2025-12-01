@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import Navbar from './components/Navbar.vue'
+import Navbar from '@/components/Navbar.vue'
 </script>
 
 <template>
-  <Navbar />
-</template>
+  <div class="min-h-screen flex flex-col bg-slate-950 text-slate-50">
+    <Navbar />
 
-<style scoped></style>
+    <main class="flex-1">
+      <RouterView />
+    </main>
+  </div>
+</template>
