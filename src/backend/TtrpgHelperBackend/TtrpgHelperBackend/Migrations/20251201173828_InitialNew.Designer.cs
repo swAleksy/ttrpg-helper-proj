@@ -12,8 +12,8 @@ using TtrpgHelperBackend;
 namespace TtrpgHelperBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251124123520_testfix")]
-    partial class testfix
+    [Migration("20251201173828_InitialNew")]
+    partial class InitialNew
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,18 +41,6 @@ namespace TtrpgHelperBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "User"
-                        });
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Authentication.User", b =>
@@ -129,14 +117,6 @@ namespace TtrpgHelperBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Backgrounds");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Dawno dawno temu w dupe",
-                            Name = "Brakowalo tego :)"
-                        });
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Character", b =>
@@ -270,80 +250,6 @@ namespace TtrpgHelperBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Classes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "A fierce warrior of primal strength and rage.",
-                            Name = "Barbarian"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "A charismatic performer and jack-of-all-trades using song and magic.",
-                            Name = "Bard"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "A divine spellcaster and healer, empowered by a deity or faith.",
-                            Name = "Cleric"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "A master of nature, able to shapeshift and call upon natural powers.",
-                            Name = "Druid"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "A skilled and versatile warrior trained in weapons and armour.",
-                            Name = "Fighter"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "A martial artist using ki, speed, and precision in combat.",
-                            Name = "Monk"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "A holy warrior bound by oath, wielding divine power and martial might.",
-                            Name = "Paladin"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Description = "A wilderness scout, expert with ranged weapons and nature’s allies.",
-                            Name = "Ranger"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Description = "A stealthy opportunist, skilled in infiltration, tricks and precision attacks.",
-                            Name = "Rogue"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Description = "A spontaneous arcane caster whose magic comes from innate power.",
-                            Name = "Sorcerer"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Description = "A spellcaster who has made a pact with a powerful entity.",
-                            Name = "Warlock"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Description = "A studious arcane caster whose power comes from rigorous training and knowledge.",
-                            Name = "Wizard"
-                        });
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Notification", b =>
@@ -404,74 +310,302 @@ namespace TtrpgHelperBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Races");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Versatile and adaptable, humans receive a bonus to all abilities.",
-                            Name = "Human"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Graceful and long-lived, elves are dexterous and attuned to magic.",
-                            Name = "Elf"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Stout and hardy, dwarves are resilient in combat and skilled craftsmen.",
-                            Name = "Dwarf"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Small and nimble, halflings are lucky and quick in tricky situations.",
-                            Name = "Halfling"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "A blend of human and elven heritage, charismatic and versatile.",
-                            Name = "Half-Elf"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "Strong and ferocious, half-orcs have orcish blood and fierce instincts.",
-                            Name = "Half-Orc"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "Small in stature and quick of mind, gnomes excel in intelligence and cunning.",
-                            Name = "Gnome"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Description = "Marked by infernal heritage, tieflings wield otherworldly power and charisma.",
-                            Name = "Tiefling"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Description = "Dark elves of the Underdark, with keen senses and shadow-affinities.",
-                            Name = "Drow"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Description = "Warrior-bred astral-plane beings, fierce in combat and psionically gifted.",
-                            Name = "Githyanki"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Description = "Draconic-bodied humanoids, born of dragon-ancestors, with breath weapons.",
-                            Name = "Dragonborn"
-                        });
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Item", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Type")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<int?>("Value")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.ToTable("Items", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Region")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.ToTable("Locations", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Note", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ContentMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.ToTable("Notes", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Npc", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Charisma")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ClassId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Constitution")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Dexterity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Intelligence")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int?>("RaceId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Strength")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Wisdom")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("RaceId");
+
+                    b.ToTable("Npcs", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.NpcSkill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("NpcId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Value")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("NpcSkills", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Scenario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.ToTable("Scenarios", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentMarkdown")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("ScenarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScenarioId");
+
+                    b.ToTable("ScenarioChapters", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterItem", b =>
+                {
+                    b.Property<int>("ScenarioChapterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ScenarioChapterId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ScenarioChapterItems", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterLocation", b =>
+                {
+                    b.Property<int>("ScenarioChapterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LocationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ScenarioChapterId", "LocationId");
+
+                    b.HasIndex("LocationId");
+
+                    b.ToTable("ScenarioChapterLocations", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterNote", b =>
+                {
+                    b.Property<int>("ScenarioChapterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NoteId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ScenarioChapterId", "NoteId");
+
+                    b.HasIndex("NoteId");
+
+                    b.ToTable("ScenarioChapterNotes", (string)null);
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterNpc", b =>
+                {
+                    b.Property<int>("ScenarioChapterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("NpcId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ScenarioChapterId", "NpcId");
+
+                    b.HasIndex("NpcId");
+
+                    b.ToTable("ScenarioChapterNpcs", (string)null);
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
@@ -619,116 +753,6 @@ namespace TtrpgHelperBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Skills");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Balance, tumble, avoid falling or being shoved.",
-                            Name = "Acrobatics"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Interact, calm, or command animals.",
-                            Name = "Animal Handling"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Knowledge of magic, magical effects and items.",
-                            Name = "Arcana"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Climb, swim, jump, and physically struggle.",
-                            Name = "Athletics"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Description = "Lie convincingly, deceive others.",
-                            Name = "Deception"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Description = "Recall lore about past events, places, people.",
-                            Name = "History"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Description = "Sense motives, detect lies, read people.",
-                            Name = "Insight"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Description = "Coerce or bully others through fear or strength.",
-                            Name = "Intimidation"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Description = "Examine, search, deduce hidden clues and details.",
-                            Name = "Investigation"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Description = "Treat injuries, diagnose illness, apply healing.",
-                            Name = "Medicine"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            Description = "Understand flora, fauna, natural environment.",
-                            Name = "Nature"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            Description = "Notice hidden things, traps, secret doors, distant sounds.",
-                            Name = "Perception"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            Description = "Entertain or impress through music, acting, or oration.",
-                            Name = "Performance"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            Description = "Convince or influence others socially.",
-                            Name = "Persuasion"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            Description = "Knowledge of deities, religious rites, sacred things.",
-                            Name = "Religion"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            Description = "Pickpocket, manipulate objects subtly, perform tricks.",
-                            Name = "Sleight of Hand"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            Description = "Move silently, hide, sneak past detection.",
-                            Name = "Stealth"
-                        },
-                        new
-                        {
-                            Id = 18,
-                            Description = "Track, forage, endure wilderness, navigate terrain.",
-                            Name = "Survival"
-                        });
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Authentication.UserRole", b =>
@@ -802,6 +826,173 @@ namespace TtrpgHelperBackend.Migrations
                     b.Navigation("Character");
 
                     b.Navigation("Skill");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Item", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Location", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Note", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Npc", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TtrpgHelperBackend.Models.Class", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TtrpgHelperBackend.Models.Race", "Race")
+                        .WithMany()
+                        .HasForeignKey("RaceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Race");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.NpcSkill", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Npc", "Npc")
+                        .WithMany("Skills")
+                        .HasForeignKey("NpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Npc");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Scenario", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Session.Campaign", "Campaign")
+                        .WithMany("Scenarios")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapter", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Scenario", "Scenario")
+                        .WithMany("Chapters")
+                        .HasForeignKey("ScenarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Scenario");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterItem", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Item", "Item")
+                        .WithMany("ChapterLinks")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.ScenarioChapter", "ScenarioChapter")
+                        .WithMany("Items")
+                        .HasForeignKey("ScenarioChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("ScenarioChapter");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterLocation", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Location", "Location")
+                        .WithMany("ChapterLinks")
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.ScenarioChapter", "ScenarioChapter")
+                        .WithMany("Locations")
+                        .HasForeignKey("ScenarioChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Location");
+
+                    b.Navigation("ScenarioChapter");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterNote", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Note", "Note")
+                        .WithMany("ChapterLinks")
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.ScenarioChapter", "ScenarioChapter")
+                        .WithMany("Notes")
+                        .HasForeignKey("ScenarioChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Note");
+
+                    b.Navigation("ScenarioChapter");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapterNpc", b =>
+                {
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.Npc", "Npc")
+                        .WithMany("ChapterLinks")
+                        .HasForeignKey("NpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TtrpgHelperBackend.Models.Resource.ScenarioChapter", "ScenarioChapter")
+                        .WithMany("Npcs")
+                        .HasForeignKey("ScenarioChapterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Npc");
+
+                    b.Navigation("ScenarioChapter");
                 });
 
             modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
@@ -894,8 +1085,48 @@ namespace TtrpgHelperBackend.Migrations
                     b.Navigation("Characters");
                 });
 
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Item", b =>
+                {
+                    b.Navigation("ChapterLinks");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Location", b =>
+                {
+                    b.Navigation("ChapterLinks");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Note", b =>
+                {
+                    b.Navigation("ChapterLinks");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Npc", b =>
+                {
+                    b.Navigation("ChapterLinks");
+
+                    b.Navigation("Skills");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.Scenario", b =>
+                {
+                    b.Navigation("Chapters");
+                });
+
+            modelBuilder.Entity("TtrpgHelperBackend.Models.Resource.ScenarioChapter", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Locations");
+
+                    b.Navigation("Notes");
+
+                    b.Navigation("Npcs");
+                });
+
             modelBuilder.Entity("TtrpgHelperBackend.Models.Session.Campaign", b =>
                 {
+                    b.Navigation("Scenarios");
+
                     b.Navigation("Sessions");
                 });
 

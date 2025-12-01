@@ -70,8 +70,16 @@ public class Program
                 };
             });
         
+        // ==========
+        // -- AUTH --
         builder.Services.AddScoped<IUserService, UserService>();
+        
+        // ================
+        // -- CHARACTERS --
         builder.Services.AddScoped<ICharacterService, CharacterService>();
+        
+        // ===================================
+        // -- TO TO NIE WIEM PO CO TUTAJ XD --
         builder.Services.AddScoped<IDashboardService, DashboardService>();
         
         // =============
@@ -88,6 +96,8 @@ public class Program
         builder.Services.AddScoped<ILocationService, LocationService>();
         builder.Services.AddScoped<INpcService, NpcService>();
         
+        // ==========================
+        // -- CHAT & NOTIFICATIONS --
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         
