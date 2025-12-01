@@ -19,6 +19,20 @@ public class Program
         // Add services to the container.
         builder.Services.AddAuthorization();
         
+        // CORS – pozwalamy frontowi na innym porcie (Vite: http://localhost:5174)
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("FrontendPolicy", policy =>
+            {
+                policy
+                    .WithOrigins("http://localhost:5173", "http://localhost:5174")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                    // .AllowCredentials(); // jeśli cookies ??
+            });
+        });
+
+
         // na razie testowo
         // do helpera Userowego
         // chodzi o to żeby mieć uniwersalną klasę
@@ -89,6 +103,9 @@ public class Program
         
         app.UseStaticFiles();
         
+        // CORS
+        app.UseCors("FrontendPolicy");
+
         app.UseAuthentication();
         app.UseAuthorization();
         

@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 
 const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const isSubmitting = ref(false)
+const errorMessage = ref('')
 
 const onSubmit = async () => {
   if (password.value !== confirmPassword.value) {
@@ -17,6 +20,8 @@ const onSubmit = async () => {
   }
 
   isSubmitting.value = true
+  errorMessage.value = ''
+  
   try {
     // POŁĄCZENIE Z BACKENDEM !!!!!!!!!!!!!!!!!
     console.log('Rejestracja...', {
@@ -25,8 +30,11 @@ const onSubmit = async () => {
       password: password.value,
     })
 
-    // Na razie prowizoryczne przekierowanie do logowania po "rejestracji"
-    await router.push('/login')
+    await auth.register(username.value, email.value, password.value, false)
+    router.push('/login')
+  } catch (err) {
+    errorMessage.value = 'Nie udało się zarejestrować użytkownika.'
+    console.error(err)
   } finally {
     isSubmitting.value = false
   }
