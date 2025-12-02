@@ -63,97 +63,178 @@ const isActiveLink = (routePath) => {
 </template> -->
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue' // Dodajemy computed
 import logo from '@/assets/img/logo.png'
+import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
+const { isAuthenticated, username, userAvatarUrl } = storeToRefs(auth)
 
 const isOpen = ref(false)
 
-const navLinks = [
-  { to: '/', label: 'Start' },
-  { to: '/dashboard', label: 'Panel' },
-]
+// Używamy computed, żeby lista linków zmieniała się dynamicznie
+const navLinks = computed(() => {
+  // Linki widoczne zawsze (lub tylko dla niezalogowanych)
+  const links = []
+
+  if (!isAuthenticated.value) {
+    // Jeśli NIE jest zalogowany, pokaż Start
+    links.push({ to: '/', label: 'Start' })
+  } else {
+    // Jeśli JEST zalogowany, pokaż Panel (Dashboard)
+    // Możesz tu też zostawić Start, jeśli chcesz, żeby zalogowany też go widział
+    links.push({ to: '/dashboard', label: 'Panel' })
+    // Np. links.push({ to: '/jobs', label: 'Zlecenia' })
+  }
+
+  return links
+})
+
+const handleLogout = () => {
+  auth.logout()
+  isOpen.value = false
+  router.push('/')
+}
 </script>
 
 <template>
-  <header
-    class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur"
-  >
+  <header class="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/80 backdrop-blur">
     <nav class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
       <!-- Logo + nazwa -->
       <RouterLink to="/" class="flex items-center gap-2">
         <img :src="logo" alt="TTRPG Helper logo" class="h-8 w-8 rounded-lg" />
-        <span class="font-semibold tracking-wide">TTRPG Helper</span>
+        <span class="font-semibold tracking-wide text-slate-100">TTRPG Helper</span>
       </RouterLink>
-
       <!-- Desktop -->
       <div class="hidden items-center gap-6 md:flex">
-        <div class="flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-4 text-sm font-medium">
           <RouterLink
             v-for="link in navLinks"
             :key="link.to"
             :to="link.to"
-            class="transition hover:text-emerald-300"
+            class="text-slate-300 transition hover:text-emerald-400"
+            active-class="text-emerald-400"
           >
             {{ link.label }}
           </RouterLink>
         </div>
 
-        <div class="flex items-center gap-2">
-          <RouterLink
-            to="/login"
-            class="rounded-xl px-4 py-2 text-sm font-medium transition hover:bg-slate-800"
-          >
-            Zaloguj się
-          </RouterLink>
-          <RouterLink
-            to="/register"
-            class="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow transition hover:bg-emerald-400"
-          >
-            Zarejestruj się
-          </RouterLink>
+        <div class="flex items-center gap-3">
+          <template v-if="!isAuthenticated">
+            <RouterLink
+              to="/login"
+              class="text-slate-300 transition hover:text-white text-sm font-medium px-2"
+            >
+              Zaloguj się
+            </RouterLink>
+
+            <RouterLink
+              to="/register"
+              class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-500"
+            >
+              Zarejestruj się
+            </RouterLink>
+          </template>
+          <!-- Nazwa + Avatar usera (link do profilu) -->
+          <template v-else>
+            <RouterLink
+              to="/profile"
+              class="group flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/50 pr-4 pl-1 py-1 transition hover:bg-slate-800 hover:border-slate-500"
+            >
+              <img
+                :src="userAvatarUrl"
+                class="h-8 w-8 rounded-full object-cover border border-slate-800"
+              />
+              <span
+                class="hidden text-sm font-medium text-slate-200 lg:block group-hover:text-white"
+              >
+                {{ username }}
+              </span>
+            </RouterLink>
+
+            <button
+              @click="handleLogout"
+              class="ml-2 text-sm text-slate-400 transition hover:text-red-400"
+            >
+              Wyloguj
+            </button>
+          </template>
         </div>
       </div>
-
       <!-- Mobile burger -->
       <button
-        class="inline-flex items-center justify-center rounded-md border border-slate-700 p-2 md:hidden"
+        class="inline-flex items-center justify-center rounded-md border border-slate-700 p-2 text-slate-300 md:hidden hover:bg-slate-800"
         @click="isOpen = !isOpen"
-        aria-label="Otwórz menu"
       >
-        <span class="i-[heroicons-outline-bars-3] h-5 w-5" v-if="!isOpen">☰</span>
-        <span v-else class="i-[heroicons-outline-x-mark] h-5 w-5">✕</span>
+        <span v-if="!isOpen">☰</span>
+        <span v-else>✕</span>
       </button>
     </nav>
 
     <!-- Mobile menu -->
     <div v-if="isOpen" class="border-t border-slate-800 bg-slate-950 md:hidden">
-      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 text-sm">
+      <div class="flex flex-col gap-2 p-4 text-sm">
         <RouterLink
           v-for="link in navLinks"
           :key="link.to"
           :to="link.to"
-          class="rounded-lg px-2 py-2 transition hover:bg-slate-800"
+          class="block rounded-lg px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-emerald-400"
+          active-class="bg-slate-900 text-emerald-400"
           @click="isOpen = false"
         >
           {{ link.label }}
         </RouterLink>
 
-        <div class="mt-2 flex flex-col gap-2">
+        <div
+          v-if="!isAuthenticated"
+          class="mt-4 flex flex-col gap-2 border-t border-slate-800 pt-4"
+        >
           <RouterLink
             to="/login"
-            class="rounded-lg px-3 py-2 text-center transition hover:bg-slate-800"
+            class="w-full text-center py-2 text-slate-300"
             @click="isOpen = false"
+            >Zaloguj</RouterLink
           >
-            Zaloguj się
-          </RouterLink>
           <RouterLink
             to="/register"
-            class="rounded-lg bg-emerald-500 px-3 py-2 text-center font-semibold text-slate-950 shadow transition hover:bg-emerald-400"
+            class="w-full text-center py-2 bg-emerald-600 rounded-lg text-white"
             @click="isOpen = false"
+            >Rejestracja</RouterLink
           >
-            Zarejestruj się
-          </RouterLink>
         </div>
+        <template v-else>
+          <!-- Mobile user menu -->
+          <RouterLink
+            to="/profile"
+            class="group flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/50 pr-4 pl-1 py-1 transition hover:bg-slate-800 hover:border-slate-500"
+          >
+            <img
+              :src="userAvatarUrl"
+              class="h-8 w-8 rounded-full object-cover border border-slate-800"
+            />
+            <span class="text-sm font-medium text-slate-200 group-hover:text-white">
+              {{ username }}
+            </span>
+          </RouterLink>
+
+          <div class="mt-4 border-t border-slate-800 pt-4">
+            <RouterLink
+              to="/profile"
+              class="w-full text-left px-3 py-2 text-slate-300 hover:bg-slate-900 rounded-lg"
+              @click="isOpen = false"
+              >Profil</RouterLink
+            >
+            <button
+              @click="handleLogout"
+              class="w-full text-left px-3 py-2 text-red-400 hover:bg-slate-900 rounded-lg"
+            >
+              Wyloguj
+            </button>
+          </div>
+        </template>
       </div>
     </div>
   </header>

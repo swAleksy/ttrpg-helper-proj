@@ -92,4 +92,49 @@ public class UserController : ControllerBase
         // todo: zmiana hasla, zmiana admin/user, zaimplementowanie metod w serwisie 
         return Ok("User updated successfully.");
     }
+
+    [HttpGet("Me")]
+    public async Task<ActionResult<UserInfoDto>> GetMe()
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return NotFound("User not found.");
+        }
+        
+        var user = await _context.Users
+            .Include(r => r.UserRoles)
+            .ThenInclude(ur => ur.Role) // Assuming UserRole joins to a Role table
+            .FirstOrDefaultAsync(c => c.Id == userId);
+
+        var userData = new UserInfoDto
+        {
+            Username = user.UserName,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl,
+            // Map the roles physically here
+            UserRoles = user.UserRoles 
+            
+        };
+        return Ok(userData);
+    }
+    private int? GetUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+        int? userIdResult = null; 
+
+        if (claim == null) return userIdResult;
+        if (int.TryParse(claim.Value, out int userId))
+            userIdResult = userId;
+        return userIdResult;
+    }
+    
+    private string GetUserName()
+    {
+        var userName = User.FindFirstValue(ClaimTypes.Name);
+        
+        if (string.IsNullOrEmpty(userName))
+            throw new Exception("User ID claim (NameIdentifier) is missing from the principal.");
+        return userName;
+    }
 }

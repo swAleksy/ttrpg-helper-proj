@@ -8,3 +8,7 @@
   background-color: rgb(255, 255, 255);
   grid-column: 70/30;
 }
+
+.default-button-st {
+  @apply flex items-center gap-2 rounded-xl px-2 py-1 border border-slate-600 hover:border-emerald-400 transition hover:bg-slate-800;
+}
