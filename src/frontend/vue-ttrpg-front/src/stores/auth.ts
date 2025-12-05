@@ -82,6 +82,35 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
       }
     },
+
+    // ODNOWIENIE ACCESS TOKENA PRZEZ REFRESH TOKEN
+    async refreshAccessToken() {
+      if (!this.refreshToken) {
+        // nie ma czym odświeżyć -> wyloguj usera
+        this.logout()
+        return
+      }
+
+      try {
+        const res = await axios.post<LoginResponse>(`${API_URL}/api/user/refresh-token`, {
+          refreshToken: this.refreshToken,
+        })
+
+        this.token = res.data.token
+        this.refreshToken = res.data.refreshToken
+
+        localStorage.setItem('auth_token', this.token)
+        localStorage.setItem('refresh_token', this.refreshToken)
+
+        // refresh token ustawiamy ponownie w axiosie
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      } catch (error) {
+        // jeśli coś nie tak -> logout
+        this.logout()
+        throw error
+      }
+    },
+
     // GET /api/user/me
     async fetchCurrentUser() {
       if (!this.token) return
