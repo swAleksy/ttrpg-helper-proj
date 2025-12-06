@@ -1,50 +1,30 @@
-﻿namespace TtrpgHelperBackend.Services;
+﻿using TtrpgHelperBackend.Helpers;
+
+namespace TtrpgHelperBackend.Services;
 
 public interface IUploadService
 {
-    Task<string> SaveAvatarAsync(string userName, IFormFile file);
+    Task<ServiceResponseH<bool>> UpdateUserAvatarAsync(int userId, string avatarUrl);
 }
 public class UploadService : IUploadService
 {
-    private readonly IWebHostEnvironment _env;
     private readonly ApplicationDbContext _context;
 
-    public UploadService(IWebHostEnvironment env, ApplicationDbContext context)
+    public UploadService( ApplicationDbContext context)
     {
-        _env = env;
         _context = context;
     }
     
-    public async Task<string> SaveAvatarAsync(string userName, IFormFile file)
+    public async Task<ServiceResponseH<bool>> UpdateUserAvatarAsync(int userId, string avatarUrl)
     {
-        
-        if (file == null || file.Length == 0)
-            throw new ArgumentException("No file uploaded.");
-
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        var allowedExtensions = new[] { ".png", ".jpg", ".jpeg" };
-
-        if (!allowedExtensions.Contains(ext))
-            throw new ArgumentException("Invalid file type. Only JPG and PNG are allowed.");
-
-        if (file.Length > 2 * 1024 * 1024) // 2 MB limit
-            throw new ArgumentException("File too large (max 2MB).");
-
-        // Build file path
-        var uploadsPath = Path.Combine(_env.WebRootPath, "uploads", "avatars");
-        if (!Directory.Exists(uploadsPath))
-            Directory.CreateDirectory(uploadsPath);
-
-        var fileName = $"{userName}{ext}";
-        var filePath = Path.Combine(uploadsPath, fileName);
-
-        // Save file
-        using (var stream = new FileStream(filePath, FileMode.Create))
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
         {
-            await file.CopyToAsync(stream);
+            return new ServiceResponseH<bool> { Success = false, Message = "User not found." };
         }
-
-        // Return relative URL for DB
-        return $"/uploads/avatars/{fileName}";
+            
+        user.AvatarUrl = avatarUrl;
+        await _context.SaveChangesAsync();
+        return new ServiceResponseH<bool> { Success = true };
     }
 }

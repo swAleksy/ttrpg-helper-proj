@@ -1,53 +1,77 @@
 ﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
-public class UploadController: ControllerBase
+[ApiController]
+public class UploadController : ControllerBase
 {
-    private readonly UploadService _uploadService;
+    private readonly IUploadService _uploadService;
     private readonly ApplicationDbContext _context;
-    
-    public UploadController(UploadService uploadService, ApplicationDbContext context)
+    public UploadController(IUploadService uploadService, ApplicationDbContext context)
     {
         _uploadService = uploadService;
         _context = context;
     }
     
-    [HttpPost("uploadAvatar")]
-    public async Task<IActionResult> UploadAvatar(IFormFile file)
+    [Authorize]
+    [HttpPost("uploadavatar")]
+    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var userNameClaim = User.FindFirst(ClaimTypes.Name);
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        // 1. Validate File Type (Security)
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest("Invalid file type.");
+
+        if (file.Length > 2 * 1024 * 1024) // 2 MB limit
+            return BadRequest("File too large (max 2MB).");
         
-        if (userNameClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        // 2. Generate Unique Filename to prevent collisions
+        var fileName = $"{Guid.NewGuid()}{extension}";
+    
+        // 3. Define Path (e.g., wwwroot/uploads/avatars)
+        var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+        if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+        var filePath = Path.Combine(uploadPath, fileName);
+
+        // 4. Save file to disk
+        using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            return Unauthorized("User name claim not found in token.");
+            await file.CopyToAsync(stream);
         }
 
-        var userName = userNameClaim.Value;
-        try
-        {
-            var avatarUrl = await _uploadService.SaveAvatarAsync(userName, file);
-            var user = await _context.Users
-                .Include(r => r.UserRoles)
-                .FirstOrDefaultAsync(c => c.Id == userId && c.UserName == userName);
-            if (user == null)
-            {
-                return Unauthorized("User not found.");
-            }
-            
-            user.AvatarUrl = avatarUrl;
-            await _context.SaveChangesAsync();
-            return Ok(new { AvatarUrl = avatarUrl });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { Error = ex.Message });
-        }
+        // 5. Update User in DB (Assuming you have a service method for this)
+        // The URL should be relative, e.g., "/uploads/avatars/guid.jpg"
+        var avatarUrl = $"/uploads/avatars/{fileName}";
+    
+        var result = await _uploadService.UpdateUserAvatarAsync(userId.Value, avatarUrl);
+    
+        if (!result.Success) return BadRequest("Could not save to database");
+
+        return Ok(new { avatarUrl });
+    }
+    
+    private int? GetUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+        int? userIdResult = null; 
+
+        if (claim == null) return userIdResult;
+        if (int.TryParse(claim.Value, out int userId))
+            userIdResult = userId;
+        return userIdResult;
     }
 }

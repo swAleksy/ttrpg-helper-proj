@@ -14,6 +14,9 @@ app.use(createPinia())
 
 const authStore = useAuthStore()
 
+authStore.initializeAuth()
+authStore.fetchCurrentUser()
+
 // po odświeżeniu strony requesty axiosa będą widzieć token
 if (authStore.token) {
   axios.defaults.headers.common['Authorization'] = `Bearer ${authStore.token}`
@@ -25,11 +28,7 @@ axios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config as any
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      authStore.refreshToken
-    ) {
+    if (error.response?.status === 401 && !originalRequest._retry && authStore.refreshToken) {
       originalRequest._retry = true
 
       try {
@@ -40,7 +39,7 @@ axios.interceptors.response.use(
       }
     }
     return Promise.reject(error)
-  }
+  },
 )
 
 app.use(router)

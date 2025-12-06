@@ -30,6 +30,9 @@ services:
     depends_on:
           postgres: 
             condition: service_healthy
+    volumes:
+      - avatars:/app/wwwroot/uploads
+      
       
 
   frontend-app:
@@ -48,3 +51,4 @@ services:
 
 volumes:
   pg_data:
+  avatars:

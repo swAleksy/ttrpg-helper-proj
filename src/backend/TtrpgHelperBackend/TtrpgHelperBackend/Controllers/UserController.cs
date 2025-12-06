@@ -7,7 +7,6 @@ using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.Controllers;
 
-
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
@@ -60,63 +59,99 @@ public class UserController : ControllerBase
         }
         return Ok(result);
     }
+
     [Authorize]
-    [HttpPut("UpdateUser")]
-    public async Task<IActionResult> UpdateUser([FromBody] UserRegisterDto request)
+    [HttpPut("profile")]
+    public async Task<IActionResult> ChangeProfile([FromBody] UpdateUserProfileDto request)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var userNameClaim = User.FindFirst(ClaimTypes.Name);
-
-        if (userIdClaim == null || userNameClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+        var userId = GetUserId(); 
+    
+        if (userId == null)
+            return Unauthorized();
+        
+        var result = await _userService.UpdateUserProfileAsync(userId.Value, request);
+        
+        if (!result.Success)
         {
-            return Unauthorized("Invalid token claims.");
+            return BadRequest("BE" + result.Message );
         }
         
-        var user = await _context.Users
-            .Include(r => r.UserRoles)
-            .FirstOrDefaultAsync(c => c.Id == userId);
-        
-        if  (user == null)
-            return Unauthorized("User not found.");
-
-        if (user.UserName != request.UserName)
-        {
-            user.UserName = request.UserName;
-        }
-
-        if (user.Email != request.Email)
-        {
-            user.Email = request.Email;
-        }
-        await _context.SaveChangesAsync();
-        // todo: zmiana hasla, zmiana admin/user, zaimplementowanie metod w serwisie 
-        return Ok("User updated successfully.");
+        return Ok( "Password changed successfully."); 
     }
-
+    
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+    {
+        var userId = GetUserId(); 
+    
+        if (userId == null)
+            return Unauthorized("BE user not found");
+        
+        var result = await _userService.ChangePasswordAsync(userId.Value, request);
+        
+        if (!result.Success)
+        {
+            return BadRequest(result.Message );
+        }
+        
+        return Ok( "Password changed successfully.");
+    }
+    
+    [Authorize]
     [HttpGet("Me")]
-    public async Task<ActionResult<UserInfoDto>> GetMe()
+    public async Task<ActionResult<UserInfoDto>> GetMe() 
     {
         var userId = GetUserId();
+    
         if (userId == null)
         {
-            return NotFound("User not found.");
+            return BadRequest("Token issue: Claim not found"); 
         }
-        
+    
         var user = await _context.Users
             .Include(r => r.UserRoles)
-            .ThenInclude(ur => ur.Role) // Assuming UserRole joins to a Role table
+            .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(c => c.Id == userId);
+
+        if (user == null)
+        {
+            return NotFound("User ID from token not found in DB.");
+        }
 
         var userData = new UserInfoDto
         {
             Username = user.UserName,
             Email = user.Email,
             AvatarUrl = user.AvatarUrl,
-            // Map the roles physically here
-            UserRoles = user.UserRoles 
-            
         };
         return Ok(userData);
+    }
+
+    [Authorize]
+    [HttpDelete("delete-user")]
+    public async Task<IActionResult> DeleteUser()
+    {
+        var userId = GetUserId();
+    
+        if (userId == null)
+        {
+            return BadRequest("Token issue: Claim not found"); 
+        }
+    
+        var user = await _context.Users
+            .Include(r => r.UserRoles)
+            .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(c => c.Id == userId);
+
+        if (user == null)
+        {
+            return NotFound("User ID from token not found in DB.");
+        }
+        
+        _context.Users.Remove(user);
+        await _context.SaveChangesAsync();
+        return Ok("User deleted successfully.");
     }
     private int? GetUserId()
     {

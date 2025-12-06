@@ -11,7 +11,9 @@ import heroImage from '@/assets/img/landing-bg.jpg'
       class="pointer-events-none absolute inset-0 bg-cover bg-center opacity-30"
       :style="{ backgroundImage: `url(${heroImage})` }"
     ></div>
-    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/80 to-slate-950"></div>
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/80 to-slate-950"
+    ></div>
 
     <!-- Treść -->
     <div class="relative z-10 mx-auto flex max-w-4xl flex-col gap-6 px-4 text-center">
@@ -25,21 +27,23 @@ import heroImage from '@/assets/img/landing-bg.jpg'
       </h1>
 
       <p class="mx-auto max-w-2xl text-sm text-slate-300 md:text-base">
-        Twórz postacie, planuj sesje, zapisuj notatki, rzucaj kośćmi i dziel się zasobami z graczami.
-        Zaprojektowane z myślą o TTRPG: D&amp;D, Warhammer, Call of Cthulhu i nie tylko.
+        Twórz postacie, planuj sesje, zapisuj notatki, rzucaj kośćmi i dziel się zasobami z
+        graczami. Zaprojektowane z myślą o TTRPG: D&amp;D, Warhammer, Call of Cthulhu i nie tylko.
       </p>
 
       <div class="mt-2 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
         <RouterLink
-          to="/register"
-          class="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400">
-          Zarejestruj się
+          to="/login"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-700 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-emerald-400 hover:text-emerald-300"
+        >
+          Zaloguj się
         </RouterLink>
 
         <RouterLink
-          to="/login"
-          class="inline-flex items-center justify-center rounded-2xl border border-slate-700 px-6 py-3 text-sm font-medium text-slate-100 transition hover:border-emerald-400 hover:text-emerald-300">
-          Zaloguj się
+          to="/register"
+          class="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400"
+        >
+          Zarejestruj się
         </RouterLink>
       </div>
 

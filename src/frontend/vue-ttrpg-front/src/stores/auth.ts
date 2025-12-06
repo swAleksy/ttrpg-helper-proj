@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
+const router = useRouter()
 
 interface LoginResponse {
   token: string
@@ -12,7 +14,7 @@ interface UserProfile {
   username: string
   email: string
   // backend może zwracać null, jeśli user nie ustawił awatara
-  avatarPath?: string | null
+  avatarUrl?: string | null
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -22,8 +24,8 @@ export const useAuthStore = defineStore('auth', {
     refreshToken: localStorage.getItem('refresh_token') as string | null,
     username: localStorage.getItem('username') as string | null,
 
-    email: null as string | null,
-    avatar: null as string | null,
+    email: localStorage.getItem('email') as string | null,
+    avatarUrl: localStorage.getItem('avatar_url') as string | null,
     loading: false,
   }),
 
@@ -32,16 +34,23 @@ export const useAuthStore = defineStore('auth', {
 
     userAvatarUrl: (state) => {
       // 1. Jeśli mamy awatar pobrany z bazy (np. Blob URL lub Base64), zwróć go
-      if (state.avatar) {
-        return state.avatar
+      if (state.avatarUrl) {
+        if (state.avatarUrl.startsWith('http')) return state.avatarUrl
+        return `${API_URL}${state.avatarUrl}`
       }
-      // 2. Jeśli nie ma awatara, użyj UI Avatars (fallback)
       const name = state.username || 'User'
       return `https://ui-avatars.com/api/?name=${name}&background=10b981&color=fff`
     },
   },
 
   actions: {
+    // zeby przy odswiezaniu zachowac token w headerze
+    initializeAuth() {
+      if (this.token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+      }
+    },
+
     // REJESTRACJA: /api/user/register
     async register(userName: string, email: string, password: string, isAdminRequest = false) {
       this.loading = true
@@ -70,14 +79,14 @@ export const useAuthStore = defineStore('auth', {
 
         this.token = res.data.token
         this.refreshToken = res.data.refreshToken
-        this.username = username // bierzemy z formularza, backend nie zwraca
 
         localStorage.setItem('auth_token', this.token)
         localStorage.setItem('refresh_token', this.refreshToken)
-        localStorage.setItem('username', this.username)
 
-        // Ustawiamy header autoryzacji dla przyszłych zapytań (ważne, jeśli nie używasz interceptorów)
+        // Ustawiamy header autoryzacji dla przyszłych zapytań
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        console.log(this.token)
+        await this.fetchCurrentUser()
       } finally {
         this.loading = false
       }
@@ -116,42 +125,100 @@ export const useAuthStore = defineStore('auth', {
       if (!this.token) return
 
       try {
-        const res = await axios.get<UserProfile>(`${API_URL}/api/user/me`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-        })
+        const res = await axios.get<UserProfile>(`${API_URL}/api/user/me`)
 
         this.username = res.data.username
-        localStorage.setItem('username', this.username)
-
         this.email = res.data.email
+        localStorage.setItem('username', this.username)
         localStorage.setItem('email', this.email)
 
-        // Jeśli backend mówi, że user ma awatar, spróbuj go pobrać
-        if (res.data.avatarPath) {
-          await this.fetchUserAvatarBlob(res.data.avatarPath)
+        console.log(res.data.avatarUrl)
+
+        if (res.data.avatarUrl) {
+          this.avatarUrl = res.data.avatarUrl
+          localStorage.setItem('avatar_url', this.avatarUrl)
         }
+        // else {
+        //   this.avatarUrl = null
+        //   localStorage.removeItem('avatar_url')
+        // }
       } catch (error) {
-        console.error('Nie udało się pobrać danych użytkownika', error)
-        // Opcjonalnie: jeśli 401, wyloguj usera
+        console.error('Error fetching user', error)
       }
     },
-    // PLACEHOLDER: POBIERANIE OBRAZKA Z BAZY
-    async fetchUserAvatarBlob(pathOrId: string) {
-      console.log('TODO: Pobieranie obrazka z bazy dla:', pathOrId)
 
-      // Na razie zostawiamy this.avatar jako null, więc zadziała getter z ui-avatars
-      this.avatar = null
+    async uploadAvatar(file: File) {
+      this.loading = true
+
+      const formData = new FormData()
+      formData.append('file', file) // Must match C# controller parameter name
+      console.log(`${API_URL}/api/upload/uploadavatar`)
+      try {
+        // Post to the specific upload endpoint
+        const res = await axios.post<{ avatarUrl: string }>(
+          `${API_URL}/api/upload/uploadavatar`,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          },
+        )
+
+        // Update state immediately with the new URL returned by backend
+        this.avatarUrl = res.data.avatarUrl
+        localStorage.setItem('avatar_url', this.avatarUrl)
+
+        return true // Success
+      } catch (error) {
+        console.error('Upload failed', error)
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
+
+    async updateProfile(payload: { UserName?: string; Email?: string }) {
+      this.loading = true
+      try {
+        await axios.put(`${API_URL}/api/user/profile`, payload)
+      } finally {
+        this.loading = false
+        this.fetchCurrentUser()
+      }
+    },
+
+    async updatePassword(CurrentPassword: string, NewPassword: string) {
+      this.loading = true
+      try {
+        await axios.post(`${API_URL}/api/user/change-password`, {
+          CurrentPassword,
+          NewPassword,
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteUser() {
+      try {
+        await axios.delete(`${API_URL}/api/user/delete-user`)
+      } finally {
+        this.loading = false
+        this.logout()
+        router.push('/')
+      }
+    },
+
     logout() {
       this.token = null
       this.refreshToken = null
       this.username = null
       this.email = null
-      this.avatar = null
+      this.avatarUrl = null
 
       localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
       localStorage.removeItem('username')
+      localStorage.removeItem('email')
       // usunięcie nagłówka
       delete axios.defaults.headers.common['Authorization']
     },

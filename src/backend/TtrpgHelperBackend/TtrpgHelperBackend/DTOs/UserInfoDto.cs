@@ -11,5 +11,5 @@ public class UserInfoDto
     public string Email { get; set; } = string.Empty;
     [Required]
     public string AvatarUrl  { get; set; } = string.Empty;
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
 }

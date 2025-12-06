@@ -90,6 +90,8 @@ public class Program
         
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
+        builder.Services.AddScoped<IUploadService, UploadService>();
+
         
         builder.Services.AddSignalR();
 
@@ -105,7 +107,8 @@ public class Program
         
         // CORS
         app.UseCors("FrontendPolicy");
-
+        
+        app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
         

@@ -24,6 +24,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/Dashboard.vue'),
     meta: { requiresAuth: true }, // tylko dla zalogowanych
   },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: () => import('@/views/ProfilView.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({
@@ -48,8 +54,7 @@ router.beforeEach((to, from, next) => {
   // 2) jeśli trasa wymaga zalogowania, a user NIE jest zalogowany -> logowanie
   if (to.meta.requiresAuth && !isLoggedIn) {
     next({ name: 'Login', query: { redirect: to.fullPath } })
-  }
-  else {
+  } else {
     next()
   }
 })
