@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TtrpgHelperBackend.DTOs.Resource;
+using TtrpgHelperBackend.DTOs.Resource.Note;
 using TtrpgHelperBackend.Models.Resource;
 
 namespace TtrpgHelperBackend.Services.Resource;

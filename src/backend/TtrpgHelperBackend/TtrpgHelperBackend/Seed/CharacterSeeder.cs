@@ -1,4 +1,5 @@
 ﻿using TtrpgHelperBackend.Models;
+using TtrpgHelperBackend.Models.Resource;
 
 namespace TtrpgHelperBackend.Seed;
 

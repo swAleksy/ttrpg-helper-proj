@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TtrpgHelperBackend.DTOs.Resource;
+using TtrpgHelperBackend.DTOs.Resource.Scenario;
 using TtrpgHelperBackend.Helpers;
-using TtrpgHelperBackend.Models.Resource;
 using TtrpgHelperBackend.Services.Resource;
 
 namespace TtrpgHelperBackend.Controllers.Resource;

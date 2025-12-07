@@ -22,10 +22,6 @@ public class ApplicationDbContext : DbContext
     // -- CHARACTERS --
     public DbSet<Character> Characters { get; set; }
     public DbSet<CharacterSkill> CharacterSkills { get; set; }
-    public DbSet<Skill> Skills { get; set; }
-    public DbSet<Race> Races { get; set; }
-    public DbSet<Class> Classes { get; set; }
-    public DbSet<Background> Backgrounds { get; set; }
     
     // =============
     // -- SESSION --
@@ -47,6 +43,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<ScenarioChapterItem> ScenarioChapterItems { get; set; }
     public DbSet<ScenarioChapterLocation> ScenarioChapterLocations { get; set; }
     public DbSet<ScenarioChapterNote> ScenarioChapterNotes { get; set; }
+    public DbSet<Rule> Rules { get; set; }
+    public DbSet<Skill> Skills { get; set; }
+    public DbSet<Race> Races { get; set; }
+    public DbSet<Class> Classes { get; set; }
+    public DbSet<Background> Backgrounds { get; set; }
     
     // ==========================
     // -- CHAT & NOTIFICATIONS --

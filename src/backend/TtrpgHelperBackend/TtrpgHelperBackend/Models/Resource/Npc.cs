@@ -8,11 +8,12 @@ public class Npc
 {
     [Key]
     public int Id { get; set; }
+
+    public bool IsCompendium { get; set; } = false;
     
-    [Required]
     [ForeignKey(nameof(Campaign))]
-    public int CampaignId { get; set; }
-    public Campaign Campaign { get; set; } = null!;
+    public int? CampaignId { get; set; }
+    public Campaign? Campaign { get; set; } = null!;
 
     [Required]
     [MaxLength(50)]

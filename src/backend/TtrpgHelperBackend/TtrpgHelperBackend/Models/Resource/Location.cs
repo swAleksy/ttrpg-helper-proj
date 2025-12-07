@@ -9,10 +9,11 @@ public class Location
     [Key]
     public int Id { get; set; }
 
-    [Required]
+    public bool IsCompendium { get; set; } = false;
+    
     [ForeignKey(nameof(Campaign))]
-    public int CampaignId { get; set; }
-    public Campaign Campaign { get; set; } = null!;
+    public int? CampaignId { get; set; }
+    public Campaign? Campaign { get; set; } = null!;
 
     [Required]
     [MaxLength(50)]

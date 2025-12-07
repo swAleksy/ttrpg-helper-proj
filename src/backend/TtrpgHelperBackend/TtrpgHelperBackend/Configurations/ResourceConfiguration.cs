@@ -84,7 +84,8 @@ public class ItemConfiguration : IEntityTypeConfiguration<Item>
         entity.HasOne(i => i.Campaign)
             .WithMany()
             .HasForeignKey(i => i.CampaignId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false);
     }
 }
 
@@ -106,7 +107,8 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         entity.HasOne(l => l.Campaign)
             .WithMany()
             .HasForeignKey(l => l.CampaignId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false);
     }
 }
 
@@ -135,7 +137,8 @@ public class NpcConfiguration : IEntityTypeConfiguration<Npc>
         entity.HasOne(n => n.Class)
             .WithMany()
             .HasForeignKey(n => n.ClassId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
     }
 }
 
@@ -243,5 +246,25 @@ public class ScenarioChapterLocationConfiguration : IEntityTypeConfiguration<Sce
             .WithMany(l => l.ChapterLinks)
             .HasForeignKey(x => x.LocationId)
             .OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+// ==========
+// -- RULE --
+public class RuleConfiguration : IEntityTypeConfiguration<Rule>
+{
+    public void Configure(EntityTypeBuilder<Rule> entity)
+    {
+        entity.ToTable("Rules");
+
+        entity.Property(r => r.Category)
+            .HasMaxLength(30);
+        
+        entity.Property(r => r.Name)
+            .HasMaxLength(50)
+            .IsRequired();
+        
+        entity.Property(r => r.ContentMarkdown)
+            .IsRequired();
     }
 }
