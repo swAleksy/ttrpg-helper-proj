@@ -202,5 +202,7 @@ public static class ResourcesSeeder
             );
             await db.SaveChangesAsync();
         }
+
+        await RuleSeeder.SeedRules(db);
     }
 }

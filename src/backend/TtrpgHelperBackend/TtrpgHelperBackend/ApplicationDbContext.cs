@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TtrpgHelperBackend.Models;
 using TtrpgHelperBackend.Models.Authentication;
+using TtrpgHelperBackend.Models.Calendar;
 using TtrpgHelperBackend.Models.Resource;
 using TtrpgHelperBackend.Models.Session;
 
@@ -53,6 +54,10 @@ public class ApplicationDbContext : DbContext
     // -- CHAT & NOTIFICATIONS --
     public DbSet<ChatMessage> ChatMessages { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    
+    // ==============
+    // -- CALENDAR --
+    public DbSet<CalendarEvent> CalendarEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
