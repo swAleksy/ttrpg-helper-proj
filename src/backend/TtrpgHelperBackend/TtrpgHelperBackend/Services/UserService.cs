@@ -62,7 +62,8 @@ public class UserService : IUserService
             UserName = request.UserName,
             Email = request.Email,
             PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt
+            PasswordSalt = passwordSalt,
+            AvatarUrl = request.AvatarUrl,
         };
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();
@@ -242,5 +243,37 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
 
         return new ServiceResponseH<User> { Data = user, Message = "Profile updated successfully." };
+    }
+    
+    public async Task<bool> DeleteUserAsync(int userId)
+    {
+        var userToDelete = await _context.Users
+            .Include(r => r.UserRoles) // Upewnij się, że UserRoles są załadowane do usunięcia
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (userToDelete == null)
+        {
+            return false;
+        }
+
+        // 1. Usuń wszystkie Friendship, w których user jest stroną
+        var relatedFriendships = await _context.Friendships
+            .Where(f => f.SourceUserId == userId || f.TargetUserId == userId)
+            .ToListAsync();
+        _context.Friendships.RemoveRange(relatedFriendships);
+    
+        // 2. Usuń inne powiązane dane (np. Postaci, Kampanie TTRPG, itp.)
+        // TODO: Usunięcie postaci powiązanych, kampanii, itp.
+        // var characters = await _context.Characters.Where(c => c.UserId == userId).ToListAsync();
+        // _context.Characters.RemoveRange(characters);
+
+        // 3. Usuń Role
+        _context.UserRoles.RemoveRange(userToDelete.UserRoles);
+
+        // 4. Usuń samego użytkownika
+        _context.Users.Remove(userToDelete);
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

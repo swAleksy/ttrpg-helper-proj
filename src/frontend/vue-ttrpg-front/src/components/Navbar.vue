@@ -63,17 +63,23 @@ const isActiveLink = (routePath) => {
 </template> -->
 
 <script setup lang="ts">
-import { ref, computed } from 'vue' // Dodajemy computed
+import { ref, computed } from 'vue'
 import logo from '@/assets/img/logo.png'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import FriendsDropdown from '@/components/FriendsDropdown.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 const { isAuthenticated, username, userAvatarUrl } = storeToRefs(auth)
 
 const isOpen = ref(false)
+const showFriends = ref(false)
+
+const toggleFriends = () => {
+  showFriends.value = !showFriends.value
+}
 
 // Używamy computed, żeby lista linków zmieniała się dynamicznie
 const navLinks = computed(() => {
@@ -154,6 +160,19 @@ const handleLogout = () => {
                 {{ username }}
               </span>
             </RouterLink>
+
+            <!-- FRIENDS ICON MENU -->
+
+            <div class="relative">
+              <button
+                @click="toggleFriends"
+                class="p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
+              >
+                👥
+              </button>
+
+              <FriendsDropdown v-if="showFriends" />
+            </div>
 
             <button
               @click="handleLogout"

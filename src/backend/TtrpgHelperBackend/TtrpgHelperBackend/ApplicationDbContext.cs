@@ -15,6 +15,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
 
+    public DbSet<Friendship> Friendships { get; set; }
+    
     public DbSet<Character> Characters { get; set; }
     public DbSet<CharacterSkill> CharacterSkills { get; set; }
     public DbSet<Skill> Skills { get; set; }
@@ -51,6 +53,24 @@ public class ApplicationDbContext : DbContext
             new Role { Id = 1, Name = "Admin" },
             new Role { Id = 2, Name = "User" }
         );
+        
+        modelBuilder.Entity<Friendship>(entity =>
+        {
+            // Klucz złożony: Para (Source, Target) musi być unikalna
+            entity.HasKey(f => new { f.SourceUserId, f.TargetUserId });
+
+            // Konfiguracja relacji dla listy "Friends" (wychodzące)
+            entity.HasOne(f => f.SourceUser)
+                .WithMany(u => u.Friends)        // Tu wskazujemy Twoją właściwość z klasy User
+                .HasForeignKey(f => f.SourceUserId)
+                .OnDelete(DeleteBehavior.Restrict); // Zapobiega kaskadowemu usuwaniu
+
+            // Konfiguracja relacji dla listy "FriendOf" (przychodzące)
+            entity.HasOne(f => f.TargetUser)
+                .WithMany(u => u.FriendOf)       // Tu wskazujemy Twoją właściwość z klasy User
+                .HasForeignKey(f => f.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
         
         modelBuilder.Entity<CharacterSkill>()
             .HasKey(cs => new { cs.CharacterId, cs.SkillId });

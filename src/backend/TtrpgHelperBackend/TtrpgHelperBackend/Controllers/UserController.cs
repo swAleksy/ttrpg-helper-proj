@@ -20,19 +20,30 @@ public class UserController : ControllerBase
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserRegisterDto request)
+    public async Task<ActionResult<TokenResponseDto>> Register(UserRegisterDto request)
     {
        var user = await _userService.Register(request);
        if (user == null)
        {
            return Conflict(new { error = "Username or email already taken " });
        }
-       //var token = _authService.CreateToken(user);
-
-       return CreatedAtAction(nameof(Register), new {
-           message = "Registration successful",
-           username = user.UserName
+       
+       var result = await _userService.Login(new UserLoginDto
+       {
+           Password = request.Password,
+           Username = request.UserName
        });
+
+       if (result == null)
+       {
+           return Unauthorized(new { Message = "Login failed after registration" });
+       }
+       
+       // return CreatedAtAction(nameof(Register), new {
+       //     message = "Registration successful",
+       //     username = user.UserName
+       // });
+       return Ok(result); 
     }
 
     [HttpPost("login")]
@@ -121,7 +132,8 @@ public class UserController : ControllerBase
 
         var userData = new UserInfoDto
         {
-            Username = user.UserName,
+            Id  = user.Id,
+            UserName = user.UserName,
             Email = user.Email,
             AvatarUrl = user.AvatarUrl,
         };
@@ -148,7 +160,7 @@ public class UserController : ControllerBase
         {
             return NotFound("User ID from token not found in DB.");
         }
-        
+        // TODO: WYWALIC Z BAZY CALA RESZTE SYFU PODPIETA POD USERA POSTACI ETC.    
         _context.Users.Remove(user);
         await _context.SaveChangesAsync();
         return Ok("User deleted successfully.");

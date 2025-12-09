@@ -22,9 +22,24 @@ public class UploadService : IUploadService
         {
             return new ServiceResponseH<bool> { Success = false, Message = "User not found." };
         }
-            
+        string? oldAvatarUrl = user.AvatarUrl;
+
         user.AvatarUrl = avatarUrl;
         await _context.SaveChangesAsync();
+        
+        if (!string.IsNullOrEmpty(oldAvatarUrl))
+        {
+            var oldFilePath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                oldAvatarUrl.TrimStart('/')
+            );
+
+            if (File.Exists(oldFilePath))
+            {
+                File.Delete(oldFilePath);
+            }
+        }
         return new ServiceResponseH<bool> { Success = true };
     }
 }

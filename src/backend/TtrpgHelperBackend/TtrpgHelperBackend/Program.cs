@@ -91,7 +91,7 @@ public class Program
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddScoped<IUploadService, UploadService>();
-
+        builder.Services.AddScoped<IFriendService, FriendService>();
         
         builder.Services.AddSignalR();
 

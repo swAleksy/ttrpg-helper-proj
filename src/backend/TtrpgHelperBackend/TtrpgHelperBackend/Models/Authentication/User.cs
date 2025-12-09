@@ -18,7 +18,7 @@ public class User
     [Required]
     public byte[] PasswordHash { get; set; } = new byte[0];
     
-    [Required]
+    [Required] 
     public byte[] PasswordSalt { get; set; } = new byte[0];
     
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
@@ -27,4 +27,7 @@ public class User
     
     public string? RefreshToken { get; set; }
     public DateTime? RefreshTokenExpiryTime { get; set; }
+    
+    public ICollection<Friendship> Friends { get; set; } = new List<Friendship>();
+    public ICollection<Friendship> FriendOf { get; set; } = new List<Friendship>();
 }

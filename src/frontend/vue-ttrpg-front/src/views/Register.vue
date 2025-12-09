@@ -21,7 +21,7 @@ const onSubmit = async () => {
 
   isSubmitting.value = true
   errorMessage.value = ''
-  
+
   try {
     // POŁĄCZENIE Z BACKENDEM !!!!!!!!!!!!!!!!!
     console.log('Rejestracja...', {
@@ -31,7 +31,7 @@ const onSubmit = async () => {
     })
 
     await auth.register(username.value, email.value, password.value, false)
-    router.push('/login')
+    router.push('/dashboard')
   } catch (err) {
     errorMessage.value = 'Nie udało się zarejestrować użytkownika.'
     console.error(err)
@@ -43,13 +43,11 @@ const onSubmit = async () => {
 
 <template>
   <section class="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-    <div class="mx-auto w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl">
-      <h2 class="text-center text-2xl font-semibold tracking-tight">
-        Załóż konto
-      </h2>
-      <p class="mt-1 text-center text-sm text-slate-400">
-        Zacznij organizować swoje sesje TTRPG.
-      </p>
+    <div
+      class="mx-auto w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-xl"
+    >
+      <h2 class="text-center text-2xl font-semibold tracking-tight">Załóż konto</h2>
+      <p class="mt-1 text-center text-sm text-slate-400">Zacznij organizować swoje sesje TTRPG.</p>
 
       <form class="mt-6 space-y-4" @submit.prevent="onSubmit">
         <div class="space-y-1">
@@ -67,9 +65,7 @@ const onSubmit = async () => {
         </div>
 
         <div class="space-y-1">
-          <label for="email" class="text-sm font-medium text-slate-200">
-            E-mail
-          </label>
+          <label for="email" class="text-sm font-medium text-slate-200"> E-mail </label>
           <input
             id="email"
             v-model="email"
@@ -81,9 +77,7 @@ const onSubmit = async () => {
         </div>
 
         <div class="space-y-1">
-          <label for="password" class="text-sm font-medium text-slate-200">
-            Hasło
-          </label>
+          <label for="password" class="text-sm font-medium text-slate-200"> Hasło </label>
           <input
             id="password"
             v-model="password"
@@ -119,9 +113,7 @@ const onSubmit = async () => {
 
       <p class="mt-4 text-center text-xs text-slate-400">
         Masz już konto?
-        <RouterLink to="/login" class="text-emerald-400 hover:underline">
-          Zaloguj się
-        </RouterLink>
+        <RouterLink to="/login" class="text-emerald-400 hover:underline"> Zaloguj się </RouterLink>
       </p>
     </div>
   </section>

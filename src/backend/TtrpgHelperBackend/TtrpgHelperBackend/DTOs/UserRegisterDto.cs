@@ -16,4 +16,6 @@ public class UserRegisterDto
     public string Password { get; set; } = string.Empty;
     
     public bool IsAdminRequest { get; set; } = false; 
+    
+    public string AvatarUrl { get; set; } = string.Empty;
 }
