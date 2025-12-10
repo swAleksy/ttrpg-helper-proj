@@ -171,7 +171,7 @@ const handleLogout = () => {
                 👥
               </button>
 
-              <FriendsDropdown v-if="showFriends" />
+              <FriendsDropdown v-if="showFriends" :onClose="toggleFriends" />
             </div>
 
             <button

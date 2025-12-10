@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
+// import { useRouter } from 'vue-router'
 import axios from 'axios'
+import router from '@/router'
 
 export const API_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
-const router = useRouter()
+// const router = useRouter()
 
 interface LoginResponse {
   token: string
@@ -20,32 +21,37 @@ interface UserProfile {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    // Inicjalizacja od razu z localStorage, żeby nie tracić sesji po odświeżeniu
+    // W LocalStorage trzymamy TYLKO tokeny
     token: localStorage.getItem('auth_token') as string | null,
     refreshToken: localStorage.getItem('refresh_token') as string | null,
-    username: localStorage.getItem('username') as string | null,
 
-    email: localStorage.getItem('email') as string | null,
-    avatarUrl: localStorage.getItem('avatar_url') as string | null,
+    // Dane użytkownika trzymamy w pamięci (reaktywne)
+    // Nie pobieramy ich z LS, bo mogą być nieaktualne.
+    // Pobrane zostaną przez fetchCurrentUser() przy starcie.
+    user: null as UserProfile | null,
     loading: false,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
 
+    username: (state) => state.user?.userName || '',
+
     userAvatarUrl: (state) => {
-      // Logic fix: Ensure we don't double-slash or mess up the URL
-      if (state.avatarUrl) {
-        if (state.avatarUrl.startsWith('http')) {
-          return state.avatarUrl
-        }
-        // Remove trailing slash from API_URL and leading slash from avatarUrl to be safe
+      const avatar = state.user?.avatarUrl
+
+      if (avatar) {
+        if (avatar.startsWith('http')) return avatar
+
+        // Czyste łączenie URLi
         const baseUrl = API_URL.replace(/\/$/, '')
-        const path = state.avatarUrl.replace(/^\//, '')
+        const path = avatar.replace(/^\//, '')
         return `${baseUrl}/${path}`
       }
-      const name = state.username || 'User'
-      return `https://ui-avatars.com/api/?name=${name}&background=10b981&color=fff`
+
+      // Fallback
+      const name = state.user?.userName || 'User'
+      return generateUiAvatar(name)
     },
   },
 
@@ -54,11 +60,22 @@ export const useAuthStore = defineStore('auth', {
     initializeAuth() {
       if (this.token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        this.fetchCurrentUser()
       } else {
         delete axios.defaults.headers.common['Authorization']
       }
     },
+    async _handleAuthResponse(response: { token: string; refreshToken: string }) {
+      this.token = response.token
+      this.refreshToken = response.refreshToken
 
+      localStorage.setItem('auth_token', this.token)
+      localStorage.setItem('refresh_token', this.refreshToken)
+
+      axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+
+      await this.fetchCurrentUser()
+    },
     // REJESTRACJA: /api/user/register
     async register(userName: string, email: string, password: string, isAdminRequest = false) {
       this.loading = true
@@ -70,18 +87,10 @@ export const useAuthStore = defineStore('auth', {
           email,
           password,
           isAdminRequest,
-          avatarUrl: generatedAvatarUrl,
+          generatedAvatarUrl,
         })
-        this.token = res.data.token
-        this.refreshToken = res.data.refreshToken
 
-        localStorage.setItem('auth_token', this.token)
-        localStorage.setItem('refresh_token', this.refreshToken)
-
-        // Ustawiamy header autoryzacji dla przyszłych zapytań
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-        console.log(this.token)
-        await this.fetchCurrentUser()
+        await this._handleAuthResponse(res.data)
       } finally {
         this.loading = false
       }
@@ -96,16 +105,7 @@ export const useAuthStore = defineStore('auth', {
           password,
         })
 
-        this.token = res.data.token
-        this.refreshToken = res.data.refreshToken
-
-        localStorage.setItem('auth_token', this.token)
-        localStorage.setItem('refresh_token', this.refreshToken)
-
-        // Ustawiamy header autoryzacji dla przyszłych zapytań
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-        console.log(this.token)
-        await this.fetchCurrentUser()
+        await this._handleAuthResponse(res.data)
       } finally {
         this.loading = false
       }
@@ -132,6 +132,7 @@ export const useAuthStore = defineStore('auth', {
 
         // refresh token ustawiamy ponownie w axiosie
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        return this.token
       } catch (error) {
         // jeśli coś nie tak -> logout
         this.logout()
@@ -141,35 +142,15 @@ export const useAuthStore = defineStore('auth', {
 
     // GET /api/user/me
     async fetchCurrentUser() {
-      if (!this.token) {
-        console.log('no token')
-        return
-      }
+      if (!this.token) return
 
       try {
         const res = await axios.get<UserProfile>(`${API_URL}/api/user/me`)
-
-        // FIX: Use camelCase here to match the JSON response
-        this.username = res.data.userName
-        this.email = res.data.email
-
-        localStorage.setItem('username', this.username)
-        localStorage.setItem('email', this.email)
-
-        console.log('--- fetchCurrentUser Success ---')
-        console.log('Store Username:', this.username) // Should now print "testuser"
-        console.log('Store Email:', this.email)
-
-        // FIX: Use camelCase here
-        console.log('Avatar URL:', res.data.avatarUrl)
-
-        if (res.data.avatarUrl) {
-          this.avatarUrl = res.data.avatarUrl
-          localStorage.setItem('avatar_url', this.avatarUrl)
-        }
+        this.user = res.data // Zapisujemy cały obiekt usera
       } catch (error: any) {
         console.error('Error fetching user', error)
-        if (error.response && error.response.status === 401) {
+        // Jeśli 401, wyloguj
+        if (error.response?.status === 401) {
           this.logout()
         }
       }
@@ -180,9 +161,7 @@ export const useAuthStore = defineStore('auth', {
 
       const formData = new FormData()
       formData.append('file', file) // Must match C# controller parameter name
-      console.log(`${API_URL}/api/upload/uploadavatar`)
       try {
-        // Post to the specific upload endpoint
         const res = await axios.post<{ avatarUrl: string }>(
           `${API_URL}/api/upload/uploadavatar`,
           formData,
@@ -192,10 +171,10 @@ export const useAuthStore = defineStore('auth', {
         )
 
         // Update state immediately with the new URL returned by backend
-        this.avatarUrl = res.data.avatarUrl
-        localStorage.setItem('avatar_url', this.avatarUrl)
-
-        return true // Success
+        if (this.user) {
+          this.user.avatarUrl = res.data.avatarUrl
+        }
+        return true
       } catch (error) {
         console.error('Upload failed', error)
         throw error
@@ -239,17 +218,14 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.token = null
       this.refreshToken = null
-      this.username = null
-      this.email = null
-      this.avatarUrl = null
+      this.user = null
 
       localStorage.removeItem('auth_token')
       localStorage.removeItem('refresh_token')
-      localStorage.removeItem('username')
-      localStorage.removeItem('email')
-      localStorage.removeItem('avatarUrl')
-      // usunięcie nagłówka
+
       delete axios.defaults.headers.common['Authorization']
+
+      router.push('/')
     },
   },
 })

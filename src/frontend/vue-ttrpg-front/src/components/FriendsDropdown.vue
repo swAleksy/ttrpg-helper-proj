@@ -4,6 +4,9 @@ import { useFriendsStore } from '@/stores/friends'
 import { storeToRefs } from 'pinia'
 import type { UserInfoDto } from '@/stores/friends' // importuj typ ze store
 
+import { useChatStore } from '@/stores/chat' // Import
+const chatStore = useChatStore()
+
 const store = useFriendsStore()
 const { friends, friendsPending, isLoading, isFriendsLoading, isPendingLoading } =
   storeToRefs(store)
@@ -29,13 +32,29 @@ onMounted(() => {
 })
 
 const goToProfile = (friend: UserInfoDto) => console.log('Navigating to', friend.userName)
-const openChat = (friend: UserInfoDto) => console.log('Open chat with:', friend.userName)
+
+const openChat = (friend: UserInfoDto) => {
+  chatStore.openChat(friend)
+}
+
+const props = defineProps<{
+  // Ta funkcja jest wywoływana, gdy użytkownik chce zamknąć okno
+  // Rodzic przekazał nam funkcję 'toggleFriendsWindow'
+  onClose: () => void
+}>()
 </script>
 
 <template>
   <div
     class="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-xl p-2 z-50"
   >
+    <button
+      @click="props.onClose"
+      class="absolute top-2 right-2 text-slate-500 hover:text-white transition-colors p-1"
+      aria-label="Zamknij menu"
+    >
+      X
+    </button>
     <label class="block text-sm text-slate-400 m-2 px-1">Dodaj Znajomego</label>
     <div class="flex gap-2 px-1 mb-4">
       <input
@@ -111,13 +130,13 @@ const openChat = (friend: UserInfoDto) => console.log('Open chat with:', friend.
           <span class="text-slate-200 text-sm truncate">{{ f.userName }}</span>
         </button>
         <button
-          class="text-emerald-400 hover:text-emerald-300 w-1/4 text-base font-medium px-2 py-1"
+          class="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-200/20 rounded-md w-1/4 text-base font-medium px-2 py-1"
           @click="handleResolve(f, true)"
         >
           ✓
         </button>
         <button
-          class="text-red-400 hover:text-red-300 w-1/4 text-base font-medium px-2 py-1"
+          class="text-red-400 hover:text-red-300 w-1/4 hover:bg-red-200/20 rounded-md text-base font-medium px-2 py-1"
           @click="handleResolve(f, false)"
         >
           X

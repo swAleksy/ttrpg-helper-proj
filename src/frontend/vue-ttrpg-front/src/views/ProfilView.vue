@@ -2,11 +2,10 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
-import axios from 'axios'
 
 const auth = useAuthStore()
-const { username, email, avatarUrl, userAvatarUrl } = storeToRefs(auth)
-// --- STATE ---
+const { user, userAvatarUrl } = storeToRefs(auth)
+
 const isLoading = ref(false)
 const message = ref<{ text: string; type: 'success' | 'error' } | null>(null)
 
@@ -21,16 +20,19 @@ const fileInput = ref<HTMLInputElement | null>(null)
 
 // --- LIFECYCLE & WATCHERS ---
 const resetProfileForm = () => {
-  profileForm.username = username.value || ''
-  profileForm.email = email.value || ''
+  profileForm.username = user.value?.userName || ''
+  profileForm.email = user.value?.email || ''
 }
 
 onMounted(() => {
+  if (!user.value) {
+    auth.fetchCurrentUser()
+  }
   resetProfileForm()
 })
 
 // Ensure form stays in sync if Store data loads late
-watch([username, email], () => {
+watch(user, () => {
   // Only update if user isn't currently typing/editing
   if (!isEditingName.value && !isEditingEmail.value) {
     resetProfileForm()
@@ -48,12 +50,12 @@ const isPasswordFormValid = computed(() => {
 })
 
 const cancelEditName = () => {
-  profileForm.username = username.value || ''
+  profileForm.username = user.value?.userName || ''
   isEditingName.value = false
 }
 
 const cancelEditEmail = () => {
-  profileForm.email = email.value || ''
+  profileForm.email = user.value?.email || ''
   isEditingEmail.value = false
 }
 
@@ -106,8 +108,10 @@ const handleUpdateProfile = async () => {
     await auth.updateProfile(payload)
 
     // Update local store (example, depends on your store)
-    if (payload.userName) auth.username = payload.userName
-    if (payload.email) auth.email = payload.email
+    if (user.value) {
+      if (payload.UserName) user.value.userName = payload.UserName
+      if (payload.Email) user.value.email = payload.Email
+    }
 
     message.value = { text: 'Profil zaktualizowany!', type: 'success' }
 
@@ -210,8 +214,8 @@ const handleDeleteAccount = async () => {
               />
             </div>
 
-            <h2 class="text-xl font-bold text-white">{{ username }}</h2>
-            <p class="text-sm text-slate-400">{{ email || 'Brak adresu e-mail' }}</p>
+            <h2 class="text-xl font-bold text-white">{{ user?.userName }}</h2>
+            <p class="text-sm text-slate-400">{{ user?.email || 'Brak adresu e-mail' }}</p>
           </div>
         </div>
 
@@ -224,7 +228,7 @@ const handleDeleteAccount = async () => {
             <div v-if="!isEditingName" class="flex items-center justify-between py-2">
               <div>
                 <span class="text-slate-500">Nazwa użytkownika</span>
-                <span class="ml-3 text-slate-200 font-medium">{{ username }}</span>
+                <span class="ml-3 text-slate-200 font-medium">{{ user?.userName }}</span>
               </div>
 
               <button
@@ -266,7 +270,7 @@ const handleDeleteAccount = async () => {
             <div v-if="!isEditingEmail" class="flex items-center justify-between py-2">
               <div>
                 <span class="text-slate-500">Email</span>
-                <span class="ml-3 text-slate-200 font-medium">{{ email || '-' }}</span>
+                <span class="ml-3 text-slate-200 font-medium">{{ user?.email || '-' }}</span>
               </div>
 
               <button
