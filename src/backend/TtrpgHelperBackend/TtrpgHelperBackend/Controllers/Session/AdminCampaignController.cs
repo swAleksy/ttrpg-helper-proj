@@ -41,13 +41,4 @@ public class AdminCampaignController : ControllerBase
 
         return Ok("Campaign deleted successfully.");
     }
-    
-    [HttpPost("archive/{id}")]
-    public async Task<IActionResult> Archive(int id)
-    {
-        var archived = await _campaignService.ArchiveCampaign(id);
-        if (!archived) return NotFound("Campaign not found.");
-
-        return Ok("Campaign archived successfully.");
-    }
 }

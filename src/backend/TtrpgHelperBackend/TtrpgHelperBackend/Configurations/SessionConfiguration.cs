@@ -5,7 +5,7 @@ using TtrpgHelperBackend.Models.Authentication;
 
 namespace TtrpgHelperBackend.Configurations;
 
-// ==================
+// ==============
 // -- CAMPAIGN --
 public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
 {
@@ -36,7 +36,7 @@ public class CampaignConfiguration : IEntityTypeConfiguration<Campaign>
     }
 }
 
-// ==================
+// =============
 // -- SESSION --
 public class SessionConfiguration : IEntityTypeConfiguration<Session>
 {
@@ -75,7 +75,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<Session>
     }
 }
 
-// =======================
+// ====================
 // -- SESSION PLAYER --
 public class SessionPlayerConfiguration : IEntityTypeConfiguration<SessionPlayer>
 {
@@ -98,7 +98,7 @@ public class SessionPlayerConfiguration : IEntityTypeConfiguration<SessionPlayer
     }
 }
 
-// =====================
+// ===================
 // -- SESSION EVENT --
 public class SessionEventConfiguration : IEntityTypeConfiguration<SessionEvent>
 {
