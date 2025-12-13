@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TtrpgHelperBackend.Models.Authentication;
+using TtrpgHelperBackend.Models.Resource;
 
 namespace TtrpgHelperBackend.Models.Session;
 
@@ -26,4 +27,6 @@ public class Campaign
     public User GameMaster { get; set; } = null!;
     
     public ICollection<Session> Sessions { get; set; } = new  List<Session>();
+    public ICollection<Scenario> Scenarios { get; set; } = new List<Scenario>();
+
 }

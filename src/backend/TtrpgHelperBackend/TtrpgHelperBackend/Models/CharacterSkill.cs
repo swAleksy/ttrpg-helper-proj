@@ -1,4 +1,6 @@
-﻿namespace TtrpgHelperBackend.Models;
+﻿using TtrpgHelperBackend.Models.Resource;
+
+namespace TtrpgHelperBackend.Models;
 
 public class CharacterSkill
 {
@@ -11,6 +13,6 @@ public class CharacterSkill
     public bool IsProficient { get; set; } = false;
     
     // ➡️ Navigation Properties
-    public Character Character { get; set; } 
-    public Skill Skill { get; set; } 
+    public Character Character { get; set; } = null!;
+    public Skill Skill { get; set; }  = null!;
 }
