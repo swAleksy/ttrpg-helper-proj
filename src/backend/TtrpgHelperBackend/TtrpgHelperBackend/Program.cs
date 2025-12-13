@@ -5,14 +5,16 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.MessagesAndNotofications;
+using TtrpgHelperBackend.Seed;
 using TtrpgHelperBackend.Services;
+using TtrpgHelperBackend.Services.Resource;
 using TtrpgHelperBackend.Services.Session;
 
 namespace TtrpgHelperBackend;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         
@@ -82,12 +84,34 @@ public class Program
                 };
             });
         
+        // ==========
+        // -- AUTH --
         builder.Services.AddScoped<IUserService, UserService>();
+        
+        // ================
+        // -- CHARACTERS --
         builder.Services.AddScoped<ICharacterService, CharacterService>();
+        
+        // ===================================
+        // -- TO TO NIE WIEM PO CO TUTAJ XD --
         builder.Services.AddScoped<IDashboardService, DashboardService>();
+        
+        // =============
+        // -- SESSION --
         builder.Services.AddScoped<ICampaignService, CampaignService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
         
+        // ==============
+        // -- RESOURCE --
+        builder.Services.AddScoped<IScenarioService, ScenarioService>();
+        builder.Services.AddScoped<IScenarioChapterService, ScenarioChapterService>();
+        builder.Services.AddScoped<INoteService, NoteService>();
+        builder.Services.AddScoped<IItemService, ItemService>();
+        builder.Services.AddScoped<ILocationService, LocationService>();
+        builder.Services.AddScoped<INpcService, NpcService>();
+        
+        // ==========================
+        // -- CHAT & NOTIFICATIONS --
         builder.Services.AddScoped<IChatService, ChatService>();
         builder.Services.AddScoped<INotificationService, NotificationService>();
         builder.Services.AddScoped<IUploadService, UploadService>();
@@ -101,6 +125,7 @@ public class Program
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             dbContext.Database.Migrate();
+            await DataSeeder.Seed(dbContext);
         }
         
         app.UseStaticFiles();

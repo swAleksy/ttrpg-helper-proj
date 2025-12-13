@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using TtrpgHelperBackend.Models.Authentication;
+using TtrpgHelperBackend.Models.Resource;
 
 namespace TtrpgHelperBackend.Models;
 
