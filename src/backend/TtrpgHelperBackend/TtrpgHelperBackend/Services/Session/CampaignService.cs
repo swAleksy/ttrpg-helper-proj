@@ -6,12 +6,20 @@ namespace TtrpgHelperBackend.Services.Session;
 
 public interface ICampaignService
 {
-    Task<GetCampaignDto?> GetCampaignForGm(int id, int gameMasterId);
-    Task<IEnumerable<GetCampaignDto>> GetCampaignsForGm(int gameMasterId, string? status = null);
+    // ===========
+    // -- ADMIN --
+    Task<GetCampaignDto?> GetCampaignForAdmin(int id);
+    Task<IEnumerable<GetCampaignDto>> GetCampaignsForAdmin(string? status = null);
     
+    // ============
+    // -- PLAYER --
     Task<GetCampaignDto?> GetCampaignForPlayer(int id, int playerId);
     Task<IEnumerable<GetCampaignDto>> GetCampaignsForPlayer(int playerId, string? status = null);
     
+    // ================
+    // -- GAMEMASTER --
+    Task<GetCampaignDto?> GetCampaignForGm(int id, int gameMasterId);
+    Task<IEnumerable<GetCampaignDto>> GetCampaignsForGm(int gameMasterId, string? status = null);
     Task<GetCampaignDto> CreateCampaign(CreateCampaignDto dto);
     Task<bool> ArchiveCampaign(int id);
     Task<bool> DeleteCampaign(int id);
@@ -26,26 +34,24 @@ public class CampaignService : ICampaignService
         _db = db;
     }
     
-    // -- GAMEMASTER --
-    public async Task<GetCampaignDto?> GetCampaignForGm(int id,  int gameMasterId)
+    // ===========
+    // -- ADMIN --
+    public async Task<GetCampaignDto?> GetCampaignForAdmin(int id)
     {
         var campaign = await _db.Campaigns
-            .Where(c => c.GameMasterId == gameMasterId)
             .Include(c => c.GameMaster)
             .Include(c => c.Sessions)
                 .ThenInclude(s => s.Players)
-                    .ThenInclude(sp => sp.Player)
+                    .ThenInclude(p => p.Player)
             .FirstOrDefaultAsync(c => c.Id == id);
         if (campaign == null) return null;
 
         return Dto(campaign);
     }
     
-    public async Task<IEnumerable<GetCampaignDto>> GetCampaignsForGm(int gameMasterId, string? status = null)
+    public async Task<IEnumerable<GetCampaignDto>> GetCampaignsForAdmin(string? status = null)
     {
-        var query = _db.Campaigns
-            .Where(c => c.GameMasterId == gameMasterId);
-
+        var query = _db.Campaigns.AsQueryable();
         if (!string.IsNullOrEmpty(status)) query = query.Where(c => c.Status == status);
 
         query = query
@@ -58,8 +64,9 @@ public class CampaignService : ICampaignService
             .Select(c => Dto(c))
             .ToListAsync();
     }
-    // -- GAMEMASTER --
     
+    
+    // ============
     // -- PLAYER --
     public async Task<GetCampaignDto?> GetCampaignForPlayer(int id,  int playerId)
     {
@@ -73,7 +80,6 @@ public class CampaignService : ICampaignService
                 .ThenInclude(s => s.Players)
                     .ThenInclude(sp => sp.Player)
             .FirstOrDefaultAsync();
-
         if (campaign == null) return null;
 
         return Dto(campaign);
@@ -83,7 +89,6 @@ public class CampaignService : ICampaignService
     {
         var query = _db.Campaigns
             .Where(c => c.Sessions.Any(s => s.Players.Any(p => p.PlayerId == playerId)));
-
         if (!string.IsNullOrEmpty(status)) query = query.Where(c => c.Status == status);
 
         query = query
@@ -96,7 +101,40 @@ public class CampaignService : ICampaignService
             .Select(c => Dto(c))
             .ToListAsync();
     }
-    // -- PLAYER --
+    
+    
+    // ================
+    // -- GAMEMASTER --
+    public async Task<GetCampaignDto?> GetCampaignForGm(int id,  int gameMasterId)
+    {
+        var campaign = await _db.Campaigns
+            .Where(c => c.GameMasterId == gameMasterId)
+            .Include(c => c.GameMaster)
+            .Include(c => c.Sessions)
+            .ThenInclude(s => s.Players)
+            .ThenInclude(sp => sp.Player)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        if (campaign == null) return null;
+
+        return Dto(campaign);
+    }
+    
+    public async Task<IEnumerable<GetCampaignDto>> GetCampaignsForGm(int gameMasterId, string? status = null)
+    {
+        var query = _db.Campaigns
+            .Where(c => c.GameMasterId == gameMasterId);
+        if (!string.IsNullOrEmpty(status)) query = query.Where(c => c.Status == status);
+
+        query = query
+            .Include(c => c.GameMaster)
+            .Include(c => c.Sessions)
+            .ThenInclude(s => s.Players)
+            .ThenInclude(p => p.Player);
+
+        return await query
+            .Select(c => Dto(c))
+            .ToListAsync();
+    }
     
     public async Task<GetCampaignDto> CreateCampaign(CreateCampaignDto dto)
     {
@@ -157,6 +195,9 @@ public class CampaignService : ICampaignService
         return true;
     } 
     
+    
+    // ====================
+    // -- HELPER METHODS --
     private static GetCampaignDto Dto(Campaign c)
     {
         return new GetCampaignDto
