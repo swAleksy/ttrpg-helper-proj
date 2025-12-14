@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using TtrpgHelperBackend.DTOs;
 using TtrpgHelperBackend.MessagesAndNotofications;
 using TtrpgHelperBackend.Models;
 
@@ -7,66 +8,100 @@ namespace TtrpgHelperBackend.Services;
 
 public interface INotificationService
 {
-    Task<Notification> SendNotificationAsync(string userId, NotificationType type, string title, string message, string? fromUserId = null);
-    Task<List<Notification>> GetUnreadNotificationsAsync(string userId);
-    Task MarkAsReadAsync(int notificationId, string userId);
+    Task<NotificationDto> SendNotificationAsync(int targetUserId, NotificationType type, string title, string message,
+        int? fromUserId = null);
+    Task<List<NotificationDto>> GetUnreadNotificationsAsync(int userId);
+    Task MarkAsReadAsync(int notificationId, int userId);
 }
 
 public class NotificationService : INotificationService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IHubContext<GameSessionHub> _hub;
+    private readonly IHubContext<MainHub> _hubContext;
 
-    public NotificationService(ApplicationDbContext context, IHubContext<GameSessionHub> hub)
+    public NotificationService(ApplicationDbContext context, IHubContext<MainHub> hubContext)
     {
         _context = context;
-        _hub = hub;
+        _hubContext = hubContext;
     }
-    public async Task<Notification> SendNotificationAsync(string userId, NotificationType type, string title, string message, string? fromUserId = null)
+
+    public async Task<NotificationDto> SendNotificationAsync(int targetUserId, NotificationType type, string title, string message, int? fromUserId = null)
     {
+        // 1. Tworzymy encję i zapisujemy w bazie (trwałość danych)
         var notification = new Notification
         {
-            UserId = userId,
+            UserId = targetUserId,
             Type = type,
             Title = title,
             Message = message,
-            FromUserId = fromUserId
+            FromUserId = fromUserId,
+            IsRead = false,
+            CreatedAt = DateTime.UtcNow
         };
 
         _context.Notifications.Add(notification);
         await _context.SaveChangesAsync();
 
-        // Push real-time notification through SignalR
-        await _hub.Clients.User(userId).SendAsync("ReceiveNotification", new
+        // 2. Mapujemy na DTO (żeby nie wysyłać całej encji z cyklami)
+        var dto = new NotificationDto
         {
-            notification.Id,
-            notification.Type,
-            notification.Title,
-            notification.Message,
-            notification.FromUserId,
-            notification.CreatedAt
-        });
+            Id = notification.Id,
+            Type = notification.Type.ToString(), // np. "FriendRequest"
+            Title = notification.Title,
+            Message = notification.Message,
+            IsRead = notification.IsRead,
+            CreatedAt = notification.CreatedAt
+        };
 
-        return notification;
+        // 3. Wysyłamy przez SignalR
+        // Uwaga: Wysyłamy DWA zdarzenia dla wygody frontendu:
+        
+        // A. Ogólne powiadomienie (do listy powiadomień)
+        await _hubContext.Clients.User(targetUserId.ToString())
+            .SendAsync("ReceiveNotification", dto);
+
+        // B. Specyficzne zdarzenie (jeśli chcesz np. podbić licznik znajomych w czasie rzeczywistym)
+        if (type == NotificationType.NewMessage)
+        {
+             // Opcjonalnie: ChatService już to robi, więc tu można pominąć
+        }
+        else if (type == NotificationType.AddedToGroup) // Przykład: FriendRequest traktujemy jako osobny typ
+        {
+             // Możesz wysłać specyficzny event, jeśli frontend tego wymaga
+             await _hubContext.Clients.User(targetUserId.ToString())
+                 .SendAsync("ReceiveFriendRequest");
+        }
+
+        return dto;
     }
 
-    public async Task<List<Notification>> GetUnreadNotificationsAsync(string userId)
+    public async Task<List<NotificationDto>> GetUnreadNotificationsAsync(int userId)
     {
         return await _context.Notifications
+            .AsNoTracking()
             .Where(n => n.UserId == userId && !n.IsRead)
             .OrderByDescending(n => n.CreatedAt)
+            .Select(n => new NotificationDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Message = n.Message,
+                Type = n.Type.ToString(),
+                IsRead = n.IsRead,
+                CreatedAt = n.CreatedAt
+            })
             .ToListAsync();
     }
 
-    public async Task MarkAsReadAsync(int notificationId, string userId)
+    public async Task MarkAsReadAsync(int notificationId, int userId)
     {
         var notification = await _context.Notifications
             .FirstOrDefaultAsync(n => n.Id == notificationId && n.UserId == userId);
 
-        if (notification == null)
-            throw new Exception("Notification not found");
-
-        notification.IsRead = true;
-        await _context.SaveChangesAsync();
+        if (notification != null)
+        {
+            notification.IsRead = true;
+            await _context.SaveChangesAsync();
+        }
     }
 }

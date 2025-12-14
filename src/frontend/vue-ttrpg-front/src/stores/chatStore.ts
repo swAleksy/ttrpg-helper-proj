@@ -1,6 +1,6 @@
 // stores/chat.ts
 import { defineStore } from 'pinia'
-import type { UserInfoDto } from '@/stores/friends'
+import type { UserInfoDto } from '@/stores/friendsStore'
 
 interface ChatState {
   activeChats: UserInfoDto[]

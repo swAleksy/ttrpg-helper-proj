@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import ChatPanel from './components/ChatPanel.vue'
 
 // 1. Importujemy store czatu i helper z Pinia
-import { useChatStore } from '@/stores/chat'
+import { useChatStore } from '@/stores/chatStore'
 import { storeToRefs } from 'pinia'
 
 const auth = useAuthStore()

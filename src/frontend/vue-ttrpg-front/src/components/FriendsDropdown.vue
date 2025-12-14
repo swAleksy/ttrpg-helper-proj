@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { useFriendsStore } from '@/stores/friends'
+import { useFriendsStore } from '@/stores/friendsStore'
 import { storeToRefs } from 'pinia'
-import type { UserInfoDto } from '@/stores/friends' // importuj typ ze store
+import type { UserInfoDto } from '@/stores/friendsStore' // importuj typ ze store
 
-import { useChatStore } from '@/stores/chat' // Import
+import { useChatStore } from '@/stores/chatStore' // Import
 const chatStore = useChatStore()
 
 const store = useFriendsStore()
@@ -139,7 +139,7 @@ const props = defineProps<{
           class="text-red-400 hover:text-red-300 w-1/4 hover:bg-red-200/20 rounded-md text-base font-medium px-2 py-1"
           @click="handleResolve(f, false)"
         >
-          X
+          ✕
         </button>
       </div>
     </div>

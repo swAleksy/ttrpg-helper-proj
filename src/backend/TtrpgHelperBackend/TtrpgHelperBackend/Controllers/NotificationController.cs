@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TtrpgHelperBackend.DTOs;
+using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.Controllers;
@@ -12,10 +13,11 @@ namespace TtrpgHelperBackend.Controllers;
 public class NotificationController : ControllerBase
 {
     private readonly INotificationService _notificationService;
-
-    public NotificationController(INotificationService notificationService)
+    private readonly UserHelper _userHelper;
+    public NotificationController(INotificationService notificationService,  UserHelper userHelper)
     {
         _notificationService = notificationService;
+        _userHelper = userHelper;
     }
     
 
@@ -23,37 +25,28 @@ public class NotificationController : ControllerBase
     [HttpGet("unread")]
     public async Task<IActionResult> GetUnreadNotifications()
     {
-        var userId = GetUserId();
-        var notifications = await _notificationService.GetUnreadNotificationsAsync(userId);
+        var userId = _userHelper.GetUserId();
+        var notifications = await _notificationService.GetUnreadNotificationsAsync(userId.Value);
         return Ok(notifications);
     }
 
-    // POST: api/notification/read/5
-    [HttpPost("read/{id}")]
+// POST: api/notification/mark-read/{id}
+    [HttpPost("mark-read/{id}")]
     public async Task<IActionResult> MarkAsRead(int id)
     {
-        var userId = GetUserId();
-        await _notificationService.MarkAsReadAsync(id, userId);
+        var userId = _userHelper.GetUserId();
+        await _notificationService.MarkAsReadAsync(id, userId.Value);
         return Ok(new { success = true });
     }
 
     // POST: api/notification/send
     [HttpPost("send")]
     public async Task<IActionResult> SendNotification([FromBody] SendNotificationRequestDto req)
-    {
-        var fromUserId = GetUserId();
+    { 
+        var fromUserId = _userHelper.GetUserId();
         var notification = await _notificationService.SendNotificationAsync(
             req.UserId, req.Type, req.Title, req.Message, fromUserId);
 
         return Ok(notification);
     }    
-    
-    private string GetUserId()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim (NameIdentifier) is missing from the principal.");
-        return userId;
-    }
 }

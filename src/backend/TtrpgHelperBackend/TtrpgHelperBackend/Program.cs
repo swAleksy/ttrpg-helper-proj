@@ -29,8 +29,9 @@ public class Program
                 policy
                     .WithOrigins("http://localhost:5173", "http://localhost:5174")
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
-                    // .AllowCredentials(); // jeśli cookies ??
+                    .AllowAnyMethod()
+                    .AllowCredentials();  // jeśli cookies ??
+            
             });
         });
 
@@ -75,7 +76,7 @@ public class Program
                     {
                         var accessToken = context.Request.Query["access_token"].FirstOrDefault();
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/chatHub") || path.StartsWithSegments("/notificationHub")))
+                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/mainHub") || path.StartsWithSegments("/notificationHub")))
                         {
                             context.Token = accessToken;
                         }
@@ -148,7 +149,7 @@ public class Program
         
         //app.UseHttpsRedirection();
         
-        app.MapHub<MainHub>("/chatHub");
+        app.MapHub<MainHub>("/mainHub");
         app.MapHub<GameSessionHub>("/notificationHub");
 
         app.Run();

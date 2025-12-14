@@ -63,23 +63,46 @@ const isActiveLink = (routePath) => {
 </template> -->
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import logo from '@/assets/img/logo.png'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import { useCommunicationStore } from '@/stores/communicationStore' // <--- NOWY STORE
 import FriendsDropdown from '@/components/FriendsDropdown.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const commStore = useCommunicationStore() // <--- Używamy store
 const { isAuthenticated, username, userAvatarUrl } = storeToRefs(auth)
+const { unreadNotificationsCount } = storeToRefs(commStore) // <--- Pobieramy licznik
 
 const isOpen = ref(false)
 const showFriends = ref(false)
 
 const toggleFriends = () => {
   showFriends.value = !showFriends.value
+  // Jeśli otwieramy okno, zerujemy licznik powiadomień (czerwoną kropkę)
+  if (showFriends.value) {
+    commStore.markNotificationsAsRead()
+  }
 }
+
+// Logika inicjalizacji SignalR
+onMounted(() => {
+  if (isAuthenticated.value) {
+    commStore.initSignalR()
+  }
+})
+
+// Obserwuj zmianę stanu logowania (np. jak ktoś się zaloguje bez odświeżania strony)
+watch(isAuthenticated, (isAuth) => {
+  if (isAuth) {
+    commStore.initSignalR()
+  } else {
+    commStore.stopSignalR()
+  }
+})
 
 // Używamy computed, żeby lista linków zmieniała się dynamicznie
 const navLinks = computed(() => {
@@ -100,6 +123,7 @@ const navLinks = computed(() => {
 })
 
 const handleLogout = () => {
+  commStore.stopSignalR() // <--- Zamykamy połączenie przy wylogowaniu
   auth.logout()
   isOpen.value = false
   router.push('/')
@@ -166,9 +190,15 @@ const handleLogout = () => {
             <div class="relative">
               <button
                 @click="toggleFriends"
-                class="p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
+                class="relative p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
               >
                 👥
+                <span
+                  v-if="unreadNotificationsCount > 0"
+                  class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-900"
+                >
+                  {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+                </span>
               </button>
 
               <FriendsDropdown v-if="showFriends" :onClose="toggleFriends" />

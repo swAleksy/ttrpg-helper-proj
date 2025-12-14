@@ -8,19 +8,19 @@ public class Notification
     public int Id { get; set; }
 
     [Required]
-    public string UserId { get; set; } = default!;
+    public int UserId { get; set; }
     
-    public NotificationType Type { get; set; }
+    public NotificationType? Type { get; set; }
 
     [Required]
     [MaxLength(150)]
-    public string Title { get; set; } = default!;
+    public string Title { get; set; } = string.Empty;
 
     [Required]
     [MaxLength(500)]
-    public string Message { get; set; } = default!;
+    public string Message { get; set; } = string.Empty;
     
-    public string? FromUserId { get; set; }
+    public int? FromUserId { get; set; }
 
     public bool IsRead { get; set; } = false;
 
@@ -30,5 +30,7 @@ public class Notification
 public enum NotificationType
 {
     AddedToGroup = 1,
-    NewMessage = 2
+    NewMessage = 2,
+    FriendRequest = 3,       // <--- DODANE
+    FriendRequestAccepted = 4 // <--- DODANE
 }

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
 import { API_URL } from '@/stores/auth' // Załóżmy, że tam masz ten stały URL
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 export interface UserInfoDto {
   id: number
@@ -40,7 +41,10 @@ export const useFriendsStore = defineStore('friends', () => {
     isFriendsLoading.value = true
     try {
       const response = await axios.get(`${API_URL}/api/friend/all`)
-      friends.value = response.data
+      friends.value = response.data.map((f: any) => ({
+        ...f,
+        avatarUrl: resolveAvatarUrl(f.avatarUrl, f.userName),
+      }))
     } catch (e) {
       console.error(e)
     } finally {
@@ -53,7 +57,10 @@ export const useFriendsStore = defineStore('friends', () => {
     isPendingLoading.value = true
     try {
       const response = await axios.get(`${API_URL}/api/friend/pending`)
-      friendsPending.value = response.data
+      friendsPending.value = response.data.map((f: any) => ({
+        ...f,
+        avatarUrl: resolveAvatarUrl(f.avatarUrl, f.userName),
+      }))
     } catch (e) {
       console.error(e)
     } finally {

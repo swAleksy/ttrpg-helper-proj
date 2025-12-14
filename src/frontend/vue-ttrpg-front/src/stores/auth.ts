@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 // import { useRouter } from 'vue-router'
 import axios from 'axios'
 import router from '@/router'
+import { resolveAvatarUrl, generateUiAvatar } from '@/utils/avatar'
 
 export const API_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
@@ -37,22 +38,7 @@ export const useAuthStore = defineStore('auth', {
 
     username: (state) => state.user?.userName || '',
 
-    userAvatarUrl: (state) => {
-      const avatar = state.user?.avatarUrl
-
-      if (avatar) {
-        if (avatar.startsWith('http')) return avatar
-
-        // Czyste łączenie URLi
-        const baseUrl = API_URL.replace(/\/$/, '')
-        const path = avatar.replace(/^\//, '')
-        return `${baseUrl}/${path}`
-      }
-
-      // Fallback
-      const name = state.user?.userName || 'User'
-      return generateUiAvatar(name)
-    },
+    userAvatarUrl: (state) => resolveAvatarUrl(state.user?.avatarUrl, state.user?.userName),
   },
 
   actions: {
@@ -80,14 +66,15 @@ export const useAuthStore = defineStore('auth', {
     async register(userName: string, email: string, password: string, isAdminRequest = false) {
       this.loading = true
       try {
-        const generatedAvatarUrl = generateUiAvatar(userName)
+        const avatarUrl = generateUiAvatar(userName)
         // backend przy 200 OK nie zwraca body, więc nie typujemy odpowiedzi
+        console.log(userName, email, password, isAdminRequest, avatarUrl)
         const res = await axios.post<LoginResponse>(`${API_URL}/api/user/register`, {
           userName,
           email,
           password,
           isAdminRequest,
-          generatedAvatarUrl,
+          avatarUrl,
         })
 
         await this._handleAuthResponse(res.data)
@@ -229,24 +216,3 @@ export const useAuthStore = defineStore('auth', {
     },
   },
 })
-
-const stringToColor = (str: string) => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  let color = ''
-  for (let i = 0; i < 3; i++) {
-    const value = (hash >> (i * 8)) & 0xff
-    color += ('00' + value.toString(16)).substr(-2)
-  }
-  return color
-}
-
-// Helper: Generate the full URL
-const generateUiAvatar = (name: string) => {
-  const bgColor = stringToColor(name)
-  const encodedName = encodeURIComponent(name)
-  // Settings: size 128, white text, custom background based on name hash
-  return `https://ui-avatars.com/api/?name=${encodedName}&background=${bgColor}&color=fff&size=128`
-}

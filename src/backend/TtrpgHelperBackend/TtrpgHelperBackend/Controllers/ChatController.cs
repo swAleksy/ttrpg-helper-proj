@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TtrpgHelperBackend.DTOs;
+using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.Controllers;
@@ -10,35 +12,24 @@ namespace TtrpgHelperBackend.Controllers;
 [Authorize]
 public class ChatController : ControllerBase
 {
-    private readonly ChatService _chatService;
-    public ChatController(ChatService chatService)
+    private readonly IChatService _chatService;
+    private readonly UserHelper _userHelper;
+    public ChatController(IChatService chatService, UserHelper userHelper)
     {
         _chatService = chatService;
+        _userHelper = userHelper;
     }
 
     // Load private chat history
-    [HttpGet("private/{otherUserId}")]
-    public async Task<IActionResult> GetPrivateMessages(string otherUserId)
+    [HttpGet("history/{otherUserId}")]
+    public async Task<ActionResult<List<MessageDto>>> GetPrivateMessages(int otherUserId)
     {
-        var userId = GetUserId();
-        var messages = await _chatService.GetPrivateChatHistory(userId, otherUserId);
-        return Ok(messages);
-    }
+        var userId = _userHelper.GetUserId(); 
+        if (userId == null) return Unauthorized();
 
-    // Load team chat history
-    [HttpGet("session/{sessionId}")]
-    public async Task<IActionResult> GetSessionMessages(string sessionId)
-    {
-        var messages = await _chatService.GetSessionChatHistory(sessionId);
-        return Ok(messages);
-    }
-    
-    private string GetUserId()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // Konwersja int na string, bo ChatService operuje na stringach (zgodnie z Identity)
+        var messages = await _chatService.GetPrivateChatHistory(userId.Value, otherUserId);
         
-        if (string.IsNullOrEmpty(userId))
-            throw new Exception("User ID claim (NameIdentifier) is missing from the principal.");
-        return userId;
+        return Ok(messages);
     }
 }
