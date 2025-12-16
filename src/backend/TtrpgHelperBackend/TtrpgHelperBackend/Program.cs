@@ -130,11 +130,8 @@ public class Program
         }
         
         app.UseStaticFiles();
-        
         // CORS
         app.UseCors("FrontendPolicy");
-        
-        app.UseStaticFiles();
         app.UseAuthentication();
         app.UseAuthorization();
         
