@@ -10,7 +10,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies (this will be fast since node_modules is a separate volume)
+
 RUN npm install
+# RUN npm install @microsoft/signalr
 
 # Copy all source code
 # (This is mostly redundant when using the 'volumes' mount, but good for base image setup)

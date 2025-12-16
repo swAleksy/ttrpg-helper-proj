@@ -7,7 +7,6 @@ using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.Controllers;
 
-
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
@@ -21,19 +20,30 @@ public class UserController : ControllerBase
     }
     
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserRegisterDto request)
+    public async Task<ActionResult<TokenResponseDto>> Register(UserRegisterDto request)
     {
        var user = await _userService.Register(request);
        if (user == null)
        {
            return Conflict(new { error = "Username or email already taken " });
        }
-       //var token = _authService.CreateToken(user);
-
-       return CreatedAtAction(nameof(Register), new {
-           message = "Registration successful",
-           username = user.UserName
+       
+       var result = await _userService.Login(new UserLoginDto
+       {
+           Password = request.Password,
+           Username = request.UserName
        });
+
+       if (result == null)
+       {
+           return Unauthorized(new { Message = "Login failed after registration" });
+       }
+       
+       // return CreatedAtAction(nameof(Register), new {
+       //     message = "Registration successful",
+       //     username = user.UserName
+       // });
+       return Ok(result); 
     }
 
     [HttpPost("login")]
@@ -60,36 +70,118 @@ public class UserController : ControllerBase
         }
         return Ok(result);
     }
-    [Authorize]
-    [HttpPut("UpdateUser")]
-    public async Task<IActionResult> UpdateUser([FromBody] UserRegisterDto request)
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var userNameClaim = User.FindFirst(ClaimTypes.Name);
 
-        if (userIdClaim == null || userNameClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+    [Authorize]
+    [HttpPut("profile")]
+    public async Task<IActionResult> ChangeProfile([FromBody] UpdateUserProfileDto request)
+    {
+        var userId = GetUserId(); 
+    
+        if (userId == null)
+            return Unauthorized();
+        
+        var result = await _userService.UpdateUserProfileAsync(userId.Value, request);
+        
+        if (!result.Success)
         {
-            return Unauthorized("Invalid token claims.");
+            return BadRequest("BE" + result.Message );
         }
         
+        return Ok( "Password changed successfully."); 
+    }
+    
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+    {
+        var userId = GetUserId(); 
+    
+        if (userId == null)
+            return Unauthorized("BE user not found");
+        
+        var result = await _userService.ChangePasswordAsync(userId.Value, request);
+        
+        if (!result.Success)
+        {
+            return BadRequest(result.Message );
+        }
+        
+        return Ok( "Password changed successfully.");
+    }
+    
+    [Authorize]
+    [HttpGet("Me")]
+    public async Task<ActionResult<UserInfoDto>> GetMe() 
+    {
+        var userId = GetUserId();
+    
+        if (userId == null)
+        {
+            return BadRequest("Token issue: Claim not found"); 
+        }
+    
         var user = await _context.Users
             .Include(r => r.UserRoles)
+            .ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(c => c.Id == userId);
-        
-        if  (user == null)
-            return Unauthorized("User not found.");
 
-        if (user.UserName != request.UserName)
+        if (user == null)
         {
-            user.UserName = request.UserName;
+            return NotFound("User ID from token not found in DB.");
         }
 
-        if (user.Email != request.Email)
+        var userData = new UserInfoDto
         {
-            user.Email = request.Email;
+            Id  = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl,
+        };
+        return Ok(userData);
+    }
+
+    [Authorize]
+    [HttpDelete("delete-user")]
+    public async Task<IActionResult> DeleteUser()
+    {
+        var userId = GetUserId();
+    
+        if (userId == null)
+        {
+            return BadRequest("Token issue: Claim not found"); 
         }
+    
+        var user = await _context.Users
+            .Include(r => r.UserRoles)
+            .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(c => c.Id == userId);
+
+        if (user == null)
+        {
+            return NotFound("User ID from token not found in DB.");
+        }
+        // TODO: WYWALIC Z BAZY CALA RESZTE SYFU PODPIETA POD USERA POSTACI ETC.    
+        _context.Users.Remove(user);
         await _context.SaveChangesAsync();
-        // todo: zmiana hasla, zmiana admin/user, zaimplementowanie metod w serwisie 
-        return Ok("User updated successfully.");
+        return Ok("User deleted successfully.");
+    }
+    private int? GetUserId()
+    {
+        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+        int? userIdResult = null; 
+
+        if (claim == null) return userIdResult;
+        if (int.TryParse(claim.Value, out int userId))
+            userIdResult = userId;
+        return userIdResult;
+    }
+    
+    private string GetUserName()
+    {
+        var userName = User.FindFirstValue(ClaimTypes.Name);
+        
+        if (string.IsNullOrEmpty(userName))
+            throw new Exception("User ID claim (NameIdentifier) is missing from the principal.");
+        return userName;
     }
 }

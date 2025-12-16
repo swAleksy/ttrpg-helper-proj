@@ -29,7 +29,7 @@ public class GameSessionHub : Hub
     {
         var senderId =  GetUserId();
         
-        await _chatService.SaveSessionMessage(senderId, sessionId, message);
+        await _chatService.SaveSessionMessage(int.Parse(senderId), int.Parse(sessionId), message);
         // Persist message
         await Clients.Group(sessionId).SendAsync("ReceiveSessionMessage", senderId, new
         {

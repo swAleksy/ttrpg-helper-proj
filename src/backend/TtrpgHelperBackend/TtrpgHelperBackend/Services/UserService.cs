@@ -4,10 +4,9 @@ using TtrpgHelperBackend.DTOs;
 using TtrpgHelperBackend.Models.Authentication;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
+using TtrpgHelperBackend.Helpers;
 namespace TtrpgHelperBackend.Services;
 
 public interface IUserService
@@ -15,6 +14,8 @@ public interface IUserService
     Task<User?> Register(UserRegisterDto request);
     Task<TokenResponseDto?> Login(UserLoginDto request);
     Task<TokenResponseDto?> RefreshTokens(TokenRefreshDto request);
+    Task<ServiceResponseH<bool>> ChangePasswordAsync(int userId, ChangePasswordDto request);
+    Task<ServiceResponseH<User>> UpdateUserProfileAsync(int userId, UpdateUserProfileDto request);
 }
 
 public class UserService : IUserService
@@ -46,7 +47,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<User?> Register(DTOs.UserRegisterDto request)
+    public async Task<User?> Register(UserRegisterDto request)
     {
         var userExists = await _context.Users.AnyAsync(u => u.UserName.ToLower() == request.UserName.ToLower() || u.Email.ToLower() == request.Email.ToLower());
 
@@ -61,7 +62,8 @@ public class UserService : IUserService
             UserName = request.UserName,
             Email = request.Email,
             PasswordHash = passwordHash,
-            PasswordSalt = passwordSalt
+            PasswordSalt = passwordSalt,
+            AvatarUrl = request.AvatarUrl,
         };
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();
@@ -78,7 +80,7 @@ public class UserService : IUserService
         if (roleToAssign == null)
         {
             throw new Exception("Log error: Roles were not seeded properly!");
-            return null; 
+            
         }
 
         _context.UserRoles.Add(new UserRole
@@ -180,5 +182,98 @@ public class UserService : IUserService
         );
         
         return new JwtSecurityTokenHandler().WriteToken(tokenDesc);
+    }
+    
+    public async Task<ServiceResponseH<bool>> ChangePasswordAsync(int userId, ChangePasswordDto request)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            return new ServiceResponseH<bool> { Success = false, Message = "User not found." };
+        }
+
+        // 1. Verify the OLD password using your existing private method
+        if (!VerifyPasswordHash(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
+        {
+            return new ServiceResponseH<bool> { Success = false, Message = "Incorrect current password." };
+        }
+
+        // 2. Hash the NEW password using your existing private method
+        CreatePasswordHash(request.NewPassword, out byte[] passwordHash, out byte[] passwordSalt);
+
+        // 3. Update the user entity
+        user.PasswordHash = passwordHash;
+        user.PasswordSalt = passwordSalt;
+
+        await _context.SaveChangesAsync();
+
+        return new ServiceResponseH<bool> { Data = true, Message = "Password changed successfully." };
+    }
+    public async Task<ServiceResponseH<User>> UpdateUserProfileAsync(int userId, UpdateUserProfileDto request)
+    {
+        // 1. Use FirstOrDefaultAsync (Safer than FindAsync for debugging types)
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return new ServiceResponseH<User> { Success = false, Message = "User not found." };
+        }
+
+        // 2. Validate inputs before assigning
+        if (!string.IsNullOrWhiteSpace(request.UserName))
+        {
+            // Check if username is actually different to avoid DB hits
+            if (user.UserName != request.UserName)
+            {
+                // Optional: Check if taken by someone else
+                var exists = await _context.Users.AnyAsync(u => u.UserName == request.UserName && u.Id != userId);
+                if (exists)
+                    return new ServiceResponseH<User> { Success = false, Message = "Username already taken." };
+
+                user.UserName = request.UserName;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            user.Email = request.Email;
+        }
+    
+        // 3. Save
+        await _context.SaveChangesAsync();
+
+        return new ServiceResponseH<User> { Data = user, Message = "Profile updated successfully." };
+    }
+    
+    public async Task<bool> DeleteUserAsync(int userId)
+    {
+        var userToDelete = await _context.Users
+            .Include(r => r.UserRoles) // Upewnij się, że UserRoles są załadowane do usunięcia
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (userToDelete == null)
+        {
+            return false;
+        }
+
+        // 1. Usuń wszystkie Friendship, w których user jest stroną
+        var relatedFriendships = await _context.Friendships
+            .Where(f => f.SourceUserId == userId || f.TargetUserId == userId)
+            .ToListAsync();
+        _context.Friendships.RemoveRange(relatedFriendships);
+    
+        // 2. Usuń inne powiązane dane (np. Postaci, Kampanie TTRPG, itp.)
+        // TODO: Usunięcie postaci powiązanych, kampanii, itp.
+        // var characters = await _context.Characters.Where(c => c.UserId == userId).ToListAsync();
+        // _context.Characters.RemoveRange(characters);
+
+        // 3. Usuń Role
+        _context.UserRoles.RemoveRange(userToDelete.UserRoles);
+
+        // 4. Usuń samego użytkownika
+        _context.Users.Remove(userToDelete);
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

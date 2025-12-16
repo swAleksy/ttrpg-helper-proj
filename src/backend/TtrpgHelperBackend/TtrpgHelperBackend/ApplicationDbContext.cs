@@ -19,6 +19,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
 
+
+    public DbSet<Friendship> Friendships { get; set; }
+
     // ================
     // -- CHARACTERS --
     public DbSet<Character> Characters { get; set; }
@@ -67,12 +70,58 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<UserRole>()
             .HasOne(ur => ur.User)
             .WithMany(u => u.UserRoles)
-            .HasForeignKey(ur => ur.UserId);
+            .HasForeignKey(ur => ur.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserRole>()
             .HasOne(ur => ur.Role)
             .WithMany(r => r.UserRoles)
-            .HasForeignKey(ur => ur.RoleId);
+            .HasForeignKey(ur => ur.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Role>().HasData(
+            new Role { Id = 1, Name = "Admin" },
+            new Role { Id = 2, Name = "User" }
+        );
+        
+        modelBuilder.Entity<Friendship>(entity =>
+        {
+            // Klucz złożony: Para (Source, Target) musi być unikalna
+            entity.HasKey(f => new { f.SourceUserId, f.TargetUserId });
+
+            // Konfiguracja relacji dla listy "Friends" (wychodzące)
+            entity.HasOne(f => f.SourceUser)
+                .WithMany(u => u.Friends)        // Tu wskazujemy Twoją właściwość z klasy User
+                .HasForeignKey(f => f.SourceUserId)
+                .OnDelete(DeleteBehavior.Restrict); // Zapobiega kaskadowemu usuwaniu
+
+            // Konfiguracja relacji dla listy "FriendOf" (przychodzące)
+            entity.HasOne(f => f.TargetUser)
+                .WithMany(u => u.FriendOf)       // Tu wskazujemy Twoją właściwość z klasy User
+                .HasForeignKey(f => f.TargetUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        // Konfiguracja ChatMessage
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            // Relacja: Nadawca (Sender)
+            entity.HasOne(m => m.Sender)
+                .WithMany() // Zakładamy, że User nie ma listy SentMessages, jeśli ma -> .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict); // WAŻNE: Nie usuwaj wiadomości automatycznie, gdy usuwasz usera (lub użyj ClientSetNull)
+
+            // Relacja: Odbiorca (Receiver)
+            entity.HasOne(m => m.Receiver)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict); // WAŻNE: Unikamy pętli usuwania kaskadowego
+                
+            // Opcjonalnie: Indeksy dla szybszego wyszukiwania historii
+            entity.HasIndex(m => m.SenderId);
+            entity.HasIndex(m => m.ReceiverId);
+            entity.HasIndex(m => m.SessionId);
+        });
         
         modelBuilder.Entity<CharacterSkill>()
             .HasKey(cs => new { cs.CharacterId, cs.SkillId });
