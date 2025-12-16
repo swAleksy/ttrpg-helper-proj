@@ -25,6 +25,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true }, // tylko dla zalogowanych
   },
   {
+    path: '/player',
+    name: 'PlayerZone',
+    component: () => import('@/views/PlayerZone.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/gm',
+    name: 'GmZone',
+    component: () => import('@/views/GmZone.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/ProfilView.vue'),
