@@ -30,6 +30,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ProfilView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/characters/new',
+    name: 'CharacterCreate',
+    component: () => import('@/views/CharacterCreate.vue'),
+    meta: { requiresAuth: true }, // tylko dla zalogowanych
+  },
 ]
 
 const router = createRouter({

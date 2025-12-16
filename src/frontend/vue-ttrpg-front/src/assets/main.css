@@ -12,3 +12,17 @@
 .default-button-st {
   @apply flex items-center gap-2 rounded-xl px-2 py-1 border border-slate-600 hover:border-emerald-400 transition hover:bg-slate-800;
 }
+
+/* !!!!!!!!!! do usunięcia jeśli modyfikacja pola skills w formularzu !!!!!!!!!!!!!!! */
+/* Hide number input spinners (Chrome, Safari, Edge) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide number input spinners (Firefox) */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
