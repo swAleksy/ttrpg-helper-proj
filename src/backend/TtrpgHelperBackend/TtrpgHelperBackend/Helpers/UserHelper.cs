@@ -24,6 +24,8 @@ public class UserHelper
             ? userId
             : (int?)null;
     }
+    
+    public string? GetUserName() => _httpContextAccessor.HttpContext?.User?.Identity?.Name;
 
     public async Task<bool> IsAdmin()
     {

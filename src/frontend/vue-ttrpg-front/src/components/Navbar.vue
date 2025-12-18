@@ -70,6 +70,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useCommunicationStore } from '@/stores/communicationStore' // <--- NOWY STORE
 import FriendsDropdown from '@/components/FriendsDropdown.vue'
+import NotificationDropdown from '@/components/NotificationDropdown.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -79,11 +80,19 @@ const { unreadNotificationsCount } = storeToRefs(commStore) // <--- Pobieramy li
 
 const isOpen = ref(false)
 const showFriends = ref(false)
+const showNotification = ref(false)
 
 const toggleFriends = () => {
   showFriends.value = !showFriends.value
   // Jeśli otwieramy okno, zerujemy licznik powiadomień (czerwoną kropkę)
   if (showFriends.value) {
+    commStore.markNotificationsAsRead()
+  }
+}
+
+const toggleNotification = () => {
+  showNotification.value = !showNotification.value
+  if (showNotification.value) {
     commStore.markNotificationsAsRead()
   }
 }
@@ -185,8 +194,24 @@ const handleLogout = () => {
               </span>
             </RouterLink>
 
-            <!-- FRIENDS ICON MENU -->
+            <div class="relative">
+              <button
+                @click="toggleNotification"
+                class="relative p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
+              >
+                🔔
+                <span
+                  v-if="unreadNotificationsCount > 0"
+                  class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-900"
+                >
+                  {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+                </span>
+              </button>
 
+              <NotificationDropdown v-if="showNotification" :onClose="toggleNotification" />
+            </div>
+
+            <!-- FRIENDS ICON MENU -->
             <div class="relative">
               <button
                 @click="toggleFriends"

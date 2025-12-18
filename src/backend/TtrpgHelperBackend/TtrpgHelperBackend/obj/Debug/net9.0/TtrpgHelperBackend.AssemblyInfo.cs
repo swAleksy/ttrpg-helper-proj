@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TtrpgHelperBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9835156036022b3a1e3569065c136ec07c678b8d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2f28d69f910823f7aee15734e838c4b37bd7be33")]
 [assembly: System.Reflection.AssemblyProductAttribute("TtrpgHelperBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TtrpgHelperBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

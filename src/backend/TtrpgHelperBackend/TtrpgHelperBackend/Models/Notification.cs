@@ -10,7 +10,7 @@ public class Notification
     [Required]
     public int UserId { get; set; }
     
-    public NotificationType? Type { get; set; }
+    public NotificationType Type { get; set; }
 
     [Required]
     [MaxLength(150)]
@@ -31,6 +31,6 @@ public enum NotificationType
 {
     AddedToGroup = 1,
     NewMessage = 2,
-    FriendRequest = 3,       // <--- DODANE
-    FriendRequestAccepted = 4 // <--- DODANE
+    FriendRequest = 3,       
+    FriendRequestAccepted = 4 
 }

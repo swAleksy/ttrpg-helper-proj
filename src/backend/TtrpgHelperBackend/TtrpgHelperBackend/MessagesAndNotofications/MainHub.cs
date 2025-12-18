@@ -3,6 +3,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using TtrpgHelperBackend.Models;
 using TtrpgHelperBackend.Services;
 
 namespace TtrpgHelperBackend.MessagesAndNotofications;
@@ -37,7 +38,7 @@ public class MainHub : Hub
         try
         {
             // Przekazujemy senderName do serwisu
-            await _chatService.SavePrivateMessage(senderId, senderName, receiverId, message);
+            await _chatService.SendPrivateMessage(senderId, senderName, receiverId, message);
         }
         catch (Exception ex)
         {
@@ -45,6 +46,26 @@ public class MainHub : Hub
             throw new HubException(ex.Message);
         }
     }
+    public async Task SendNotification(int receiverId, NotificationType type, string message, string? title)
+    {
+        var senderIdStr = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var senderName = Context.User?.FindFirstValue(ClaimTypes.Name);
+
+        if (string.IsNullOrEmpty(senderIdStr) || string.IsNullOrEmpty(senderName))
+            throw new HubException("Unauthorized");
+
+        int senderId = int.Parse(senderIdStr);
+        
+        try
+        {
+            await _notificationService.SendNotification(receiverId, type, title, message, senderId);
+        }
+        catch (Exception ex)
+        {
+            throw new HubException(ex.Message);
+        }
+    }
+    
     // public override async Task OnConnectedAsync()
     // {
     //     var userId =  GetUserId();

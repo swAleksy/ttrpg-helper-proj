@@ -7,7 +7,7 @@ namespace TtrpgHelperBackend.Services;
 
 public interface IChatService
 {
-    Task SavePrivateMessage(int senderId, string senderName, int receiverId, string content);
+    Task SendPrivateMessage(int senderId, string senderName, int receiverId, string content);
     Task SaveSessionMessage(int senderId, int sessionId, string content);
     Task<List<MessageDto>> GetPrivateChatHistory(int userId, int otherUserId);
     Task<List<MessageDto>> GetSessionChatHistory(int sessionId);
@@ -25,7 +25,7 @@ public class ChatService :  IChatService
     }
 
 // Dodano parametr senderName
-    public async Task SavePrivateMessage(int senderId, string senderName, int receiverId, string content)
+    public async Task SendPrivateMessage(int senderId, string senderName, int receiverId, string content)
     {
         // 1. Walidacja (przeniesiona z Huba)
         // Opcjonalnie: Możesz pominąć to sprawdzenie dla wydajności, 

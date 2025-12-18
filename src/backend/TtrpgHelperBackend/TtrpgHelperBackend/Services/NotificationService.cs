@@ -8,7 +8,7 @@ namespace TtrpgHelperBackend.Services;
 
 public interface INotificationService
 {
-    Task<NotificationDto> SendNotificationAsync(int targetUserId, NotificationType type, string title, string message,
+    Task<NotificationDto> SendNotification(int targetUserId, NotificationType type, string title, string message,
         int? fromUserId = null);
     Task<List<NotificationDto>> GetUnreadNotificationsAsync(int userId);
     Task MarkAsReadAsync(int notificationId, int userId);
@@ -25,9 +25,12 @@ public class NotificationService : INotificationService
         _hubContext = hubContext;
     }
 
-    public async Task<NotificationDto> SendNotificationAsync(int targetUserId, NotificationType type, string title, string message, int? fromUserId = null)
+    public async Task<NotificationDto> SendNotification(int targetUserId, NotificationType type, string title, string message, int? fromUserId = null)
     {
-        // 1. Tworzymy encję i zapisujemy w bazie (trwałość danych)
+        var receiverExists = await _context.Users.AnyAsync(u => u.Id == targetUserId);
+        if (!receiverExists)
+            throw new Exception("Receiver not found");
+        
         var notification = new Notification
         {
             UserId = targetUserId,
@@ -52,25 +55,10 @@ public class NotificationService : INotificationService
             IsRead = notification.IsRead,
             CreatedAt = notification.CreatedAt
         };
-
-        // 3. Wysyłamy przez SignalR
-        // Uwaga: Wysyłamy DWA zdarzenia dla wygody frontendu:
         
         // A. Ogólne powiadomienie (do listy powiadomień)
         await _hubContext.Clients.User(targetUserId.ToString())
             .SendAsync("ReceiveNotification", dto);
-
-        // B. Specyficzne zdarzenie (jeśli chcesz np. podbić licznik znajomych w czasie rzeczywistym)
-        if (type == NotificationType.NewMessage)
-        {
-             // Opcjonalnie: ChatService już to robi, więc tu można pominąć
-        }
-        else if (type == NotificationType.AddedToGroup) // Przykład: FriendRequest traktujemy jako osobny typ
-        {
-             // Możesz wysłać specyficzny event, jeśli frontend tego wymaga
-             await _hubContext.Clients.User(targetUserId.ToString())
-                 .SendAsync("ReceiveFriendRequest");
-        }
 
         return dto;
     }

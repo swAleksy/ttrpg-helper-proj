@@ -23,30 +23,24 @@ public class NotificationController : ControllerBase
 
     // GET: api/notification/unread
     [HttpGet("unread")]
-    public async Task<IActionResult> GetUnreadNotifications()
+    public async Task<ActionResult<List<NotificationDto>>> GetUnreadNotifications()
     {
         var userId = _userHelper.GetUserId();
-        var notifications = await _notificationService.GetUnreadNotificationsAsync(userId.Value);
-        return Ok(notifications);
+        if (userId == null)
+            return Unauthorized();
+        
+        return Ok(await _notificationService.GetUnreadNotificationsAsync(userId.Value));
     }
 
-// POST: api/notification/mark-read/{id}
+    // POST: api/notification/mark-read/{id}
     [HttpPost("mark-read/{id}")]
     public async Task<IActionResult> MarkAsRead(int id)
     {
         var userId = _userHelper.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+        
         await _notificationService.MarkAsReadAsync(id, userId.Value);
-        return Ok(new { success = true });
+        return Ok();
     }
-
-    // POST: api/notification/send
-    [HttpPost("send")]
-    public async Task<IActionResult> SendNotification([FromBody] SendNotificationRequestDto req)
-    { 
-        var fromUserId = _userHelper.GetUserId();
-        var notification = await _notificationService.SendNotificationAsync(
-            req.UserId, req.Type, req.Title, req.Message, fromUserId);
-
-        return Ok(notification);
-    }    
 }
