@@ -1,47 +1,61 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { useFriendsStore } from '@/stores/friendsStore'
+/**
+ * Friends Dropdown Component
+ * Displays friends list, pending requests, and add friend form
+ */
+import { reactive, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { UserInfoDto } from '@/stores/friendsStore' // importuj typ ze store
+import { useRouter } from 'vue-router'
+import { useFriendsStore } from '@/stores/friendsStore'
+import { useChatStore } from '@/stores/chatStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
-import { useChatStore } from '@/stores/chatStore' // Import
+import type { UserInfoDto } from '@/types'
+
+const props = defineProps<{
+  onClose: () => void
+}>()
+
+const router = useRouter()
+const friendsStore = useFriendsStore()
 const chatStore = useChatStore()
+const notificationStore = useNotificationStore()
 
-const store = useFriendsStore()
-const { friends, friendsPending, isLoading, isFriendsLoading, isPendingLoading } =
-  storeToRefs(store)
+const { friends, pendingRequests, isLoading, isFriendsLoading, isPendingLoading } =
+  storeToRefs(friendsStore)
 
-// Lokalne UI state dla formularza
+// Form state
 const friendForm = reactive({ id: '' })
 
-// Funkcje obsługi UI
+// Actions
 const handleSendRequest = async () => {
-  await store.sendFriendRequest(friendForm.id)
+  if (!friendForm.id) return
+  await friendsStore.sendFriendRequest(friendForm.id)
   friendForm.id = ''
 }
 
-const handleResolve = (friend: UserInfoDto, accept: boolean) => {
-  store.resolvePending(friend.id, accept)
+const handleAccept = (friend: UserInfoDto) => {
+  friendsStore.acceptRequest(friend.id)
 }
 
-// Możemy załadować dane od razu po otwarciu komponentu (jeśli jest montowany warunkowo v-if)
-// lub wywołać to z rodzica. Tutaj przykład ładowania przy montowaniu:
-onMounted(() => {
-  store.fetchFriends()
-  store.fetchPending()
-})
+const handleReject = (friend: UserInfoDto) => {
+  friendsStore.rejectRequest(friend.id)
+}
 
-const goToProfile = (friend: UserInfoDto) => console.log('Navigating to', friend.userName)
+const goToProfile = (friend: UserInfoDto) => {
+  router.push(`/profile/${friend.id}`)
+  props.onClose()
+}
 
 const openChat = (friend: UserInfoDto) => {
   chatStore.openChat(friend)
+  props.onClose()
 }
 
-const props = defineProps<{
-  // Ta funkcja jest wywoływana, gdy użytkownik chce zamknąć okno
-  // Rodzic przekazał nam funkcję 'toggleFriendsWindow'
-  onClose: () => void
-}>()
+onMounted(() => {
+  friendsStore.fetchFriends()
+  friendsStore.fetchPending()
+})
 </script>
 
 <template>
@@ -86,20 +100,26 @@ const props = defineProps<{
       :key="f.id"
       class="flex items-center justify-between p-1 rounded hover:bg-slate-800 group"
     >
-      <button
-        @click="goToProfile(f)"
-        class="flex items-center gap-3 w-3/4 p-1 text-left focus:outline-none"
-      >
+      <button @click="goToProfile(f)" class="flex items-center gap-3 w-3/4 p-1 text-left relative">
         <img
-          :src="f.avatarUrl || 'https://via.placeholder.com/32'"
+          :src="f.avatarUrl || '...'"
           class="h-8 w-8 rounded-full border border-slate-700 object-cover"
         />
+
+        <span
+          v-if="notificationStore.hasUnreadFrom(f.id)"
+          class="absolute left-7 top-1 flex h-3 w-3"
+        >
+          <span
+            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
+          ></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+        </span>
+
         <span class="text-slate-200 text-sm truncate">{{ f.userName }}</span>
       </button>
-      <button
-        class="text-emerald-400 hover:text-emerald-300 text-xs font-medium px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity"
-        @click="openChat(f)"
-      >
+
+      <button @click="openChat(f)" class="text-emerald-400 hover:text-emerald-300 text-xs">
         Chat
       </button>
     </div>
@@ -109,13 +129,13 @@ const props = defineProps<{
     </h3>
 
     <div v-if="isPendingLoading" class="text-slate-500 text-xs text-center p-2">Ładowanie...</div>
-    <div v-else-if="friendsPending.length === 0" class="text-slate-500 text-xs text-center p-2">
+    <div v-else-if="pendingRequests.length === 0" class="text-slate-500 text-xs text-center p-2">
       Brak oczekujących
     </div>
 
     <div v-else>
       <div
-        v-for="f in friendsPending"
+        v-for="f in pendingRequests"
         :key="f.id"
         class="flex items-center justify-between p-1 rounded hover:bg-slate-800 group"
       >
@@ -131,13 +151,13 @@ const props = defineProps<{
         </button>
         <button
           class="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-200/20 rounded-md w-1/4 text-base font-medium px-2 py-1"
-          @click="handleResolve(f, true)"
+          @click="handleAccept(f)"
         >
           ✓
         </button>
         <button
           class="text-red-400 hover:text-red-300 w-1/4 hover:bg-red-200/20 rounded-md text-base font-medium px-2 py-1"
-          @click="handleResolve(f, false)"
+          @click="handleReject(f)"
         >
           ✕
         </button>

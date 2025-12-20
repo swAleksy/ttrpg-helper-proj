@@ -1,118 +1,104 @@
+/**
+ * Communication Store
+ * Manages SignalR real-time connection and message routing
+ */
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr'
-import axios from 'axios'
+import { ref, computed } from 'vue'
+import { HubConnectionBuilder, HubConnection, HubConnectionState } from '@microsoft/signalr'
 
-// Stores
-import { useAuthStore, API_URL } from '@/stores/auth'
+import { API_URL, SIGNALR_HUB_URL } from '@/config/api'
+import { useAuthStore } from '@/stores/auth'
 import { useFriendsStore } from '@/stores/friendsStore'
-import { useNotificationStore, type NotificationDto } from '@/stores/notificationStore'
+import { useNotificationStore } from '@/stores/notificationStore'
+import type { NotificationDto } from '@/types'
 
 export const useCommunicationStore = defineStore('communication', () => {
   // State
   const connection = ref<HubConnection | null>(null)
-  const isConnected = ref(false)
-  const unreadNotificationsCount = ref(0) // For the bell icon (e.g., total unread)
-  const hasNewMessages = ref(false) // For the chat icon dot
+  const hasNewMessages = ref(false)
 
-  // Store instances
-  const authStore = useAuthStore()
-  const friendsStore = useFriendsStore()
-  const notificationStore = useNotificationStore()
+  // Getters
+  const isConnected = computed(() => connection.value?.state === HubConnectionState.Connected)
 
+  // Actions
   const initSignalR = async () => {
+    const authStore = useAuthStore()
+
     // Prevent double connection or connection without token
     if (isConnected.value || !authStore.token) return
 
-    // Optional: Fetch initial counts (e.g. unread friend requests)
-    await fetchInitialNotificationsState()
+    // Fetch initial state
+    const friendsStore = useFriendsStore()
+    const notificationStore = useNotificationStore()
+
+    await Promise.all([friendsStore.fetchPending(), notificationStore.fetchNotifications()])
 
     const newConnection = new HubConnectionBuilder()
-      .withUrl(`${API_URL}/mainHub`, {
+      .withUrl(SIGNALR_HUB_URL, {
         accessTokenFactory: () => authStore.token || '',
       })
       .withAutomaticReconnect()
       .build()
 
-    // --- HANDLERS ---
+    // === EVENT HANDLERS ===
 
-    // 1. General Notification Handler (The "Master" Listener)
-    // This handles everything: Friend Requests, Acceptances, System Alerts, etc.
+    // General notification handler
     newConnection.on('ReceiveNotification', (dto: NotificationDto) => {
-      console.log('New notification received:', dto)
+      console.log('Notification received:', dto.type)
 
-      // A. Push the notification to the visual dropdown list immediately
+      // Push to notification store
       notificationStore.pushNotification(dto)
 
-      // B. Handle specific side effects based on the TYPE of notification
+      // Handle side effects based on notification type
       switch (dto.type) {
         case 'FriendRequest':
-          // If we got a friend request, update the red counter and refresh the pending list
-          unreadNotificationsCount.value++
           friendsStore.fetchPending()
           break
-
         case 'FriendRequestAccepted':
-          // If someone accepted us, refresh the main friends list
           friendsStore.fetchFriends()
           break
-
         case 'NewMessage':
-          // If the notification was about a message, mark chat as having activity
           hasNewMessages.value = true
+          console.log('TESTSTETADF')
           break
       }
     })
 
-    // 2. Chat Specific Handler
-    // We keep this separate because chat messages often come with a "MessageDto" payload
-    // that is different from a "NotificationDto", and we might need to append it to a chat window.
-    newConnection.on('ReceivePrivateMessage', (msg) => {
+    // Private message handler (for chat)
+    newConnection.on('ReceivePrivateMessage', () => {
       hasNewMessages.value = true
-      // logic to append message to active chat window store could go here
     })
 
-    // --- START CONNECTION ---
+    // Start connection
     try {
       await newConnection.start()
-      console.log('SignalR Global Connected')
-      isConnected.value = true
+      console.log('SignalR connected')
       connection.value = newConnection
-    } catch (err) {
-      console.error('SignalR Connection Error:', err)
+    } catch (error) {
+      console.error('SignalR connection error:', error)
     }
   }
 
-  const fetchInitialNotificationsState = async () => {
-    if (!authStore.token) return
-    try {
-      // Fetch amount of pending friend requests for the red badge
-      const res = await axios.get(`${API_URL}/api/friend/pending`)
-      unreadNotificationsCount.value = res.data.length
-    } catch (err) {
-      console.error('Error fetching notification count', err)
-    }
-  }
-
-  const stopSignalR = () => {
+  const stopSignalR = async () => {
     if (connection.value) {
-      connection.value.stop()
-      isConnected.value = false
+      await connection.value.stop()
       connection.value = null
     }
   }
 
-  const markNotificationsAsRead = () => {
-    unreadNotificationsCount.value = 0
+  const clearMessageIndicator = () => {
+    hasNewMessages.value = false
   }
 
   return {
+    // State
     connection,
-    isConnected,
-    unreadNotificationsCount,
     hasNewMessages,
+    // Getters
+    isConnected,
+    // Actions
     initSignalR,
     stopSignalR,
-    markNotificationsAsRead,
+    clearMessageIndicator,
   }
 })

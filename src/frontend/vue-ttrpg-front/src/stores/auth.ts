@@ -1,48 +1,32 @@
+/**
+ * Authentication Store
+ * Manages user authentication, tokens, and profile data
+ */
 import { defineStore } from 'pinia'
-// import { useRouter } from 'vue-router'
 import axios from 'axios'
 import router from '@/router'
+import { API_URL } from '@/config/api'
 import { resolveAvatarUrl, generateUiAvatar } from '@/utils/avatar'
+import type { UserProfile, LoginResponse } from '@/types'
 
-export const API_URL =
-  (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
-// const router = useRouter()
-
-interface LoginResponse {
-  token: string
-  refreshToken: string
-}
-
-interface UserProfile {
-  id: number
-  userName: string
-  email: string
-  avatarUrl?: string | null
-}
+// Re-export for backward compatibility
+export { API_URL } from '@/config/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    // W LocalStorage trzymamy TYLKO tokeny
     token: localStorage.getItem('auth_token') as string | null,
     refreshToken: localStorage.getItem('refresh_token') as string | null,
-
-    // Dane użytkownika trzymamy w pamięci (reaktywne)
-    // Nie pobieramy ich z LS, bo mogą być nieaktualne.
-    // Pobrane zostaną przez fetchCurrentUser() przy starcie.
     user: null as UserProfile | null,
-    loading: false,
+    isLoading: false,
   }),
 
   getters: {
     isAuthenticated: (state) => !!state.token,
-
-    username: (state) => state.user?.userName || '',
-
+    username: (state) => state.user?.userName ?? '',
     userAvatarUrl: (state) => resolveAvatarUrl(state.user?.avatarUrl, state.user?.userName),
   },
 
   actions: {
-    // zeby przy odswiezaniu zachowac token w headerze
     initializeAuth() {
       if (this.token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
@@ -51,7 +35,8 @@ export const useAuthStore = defineStore('auth', {
         delete axios.defaults.headers.common['Authorization']
       }
     },
-    async _handleAuthResponse(response: { token: string; refreshToken: string }) {
+
+    async _handleAuthResponse(response: LoginResponse) {
       this.token = response.token
       this.refreshToken = response.refreshToken
 
@@ -62,13 +47,11 @@ export const useAuthStore = defineStore('auth', {
 
       await this.fetchCurrentUser()
     },
-    // REJESTRACJA: /api/user/register
+
     async register(userName: string, email: string, password: string, isAdminRequest = false) {
-      this.loading = true
+      this.isLoading = true
       try {
         const avatarUrl = generateUiAvatar(userName)
-        // backend przy 200 OK nie zwraca body, więc nie typujemy odpowiedzi
-        console.log(userName, email, password, isAdminRequest, avatarUrl)
         const res = await axios.post<LoginResponse>(`${API_URL}/api/user/register`, {
           userName,
           email,
@@ -76,32 +59,27 @@ export const useAuthStore = defineStore('auth', {
           isAdminRequest,
           avatarUrl,
         })
-
         await this._handleAuthResponse(res.data)
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
 
-    // LOGOWANIE: /api/user/login
     async login(username: string, password: string) {
-      this.loading = true
+      this.isLoading = true
       try {
         const res = await axios.post<LoginResponse>(`${API_URL}/api/user/login`, {
           username,
           password,
         })
-
         await this._handleAuthResponse(res.data)
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
 
-    // ODNOWIENIE ACCESS TOKENA PRZEZ REFRESH TOKEN
     async refreshAccessToken() {
       if (!this.refreshToken) {
-        // nie ma czym odświeżyć -> wyloguj usera
         this.logout()
         return
       }
@@ -117,47 +95,40 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('auth_token', this.token)
         localStorage.setItem('refresh_token', this.refreshToken)
 
-        // refresh token ustawiamy ponownie w axiosie
         axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
         return this.token
       } catch (error) {
-        // jeśli coś nie tak -> logout
         this.logout()
         throw error
       }
     },
 
-    // GET /api/user/me
     async fetchCurrentUser() {
       if (!this.token) return
 
       try {
         const res = await axios.get<UserProfile>(`${API_URL}/api/user/me`)
-        this.user = res.data // Zapisujemy cały obiekt usera
-      } catch (error: any) {
+        this.user = res.data
+      } catch (error: unknown) {
         console.error('Error fetching user', error)
-        // Jeśli 401, wyloguj
-        if (error.response?.status === 401) {
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
           this.logout()
         }
       }
     },
 
     async uploadAvatar(file: File) {
-      this.loading = true
-
-      const formData = new FormData()
-      formData.append('file', file) // Must match C# controller parameter name
+      this.isLoading = true
       try {
+        const formData = new FormData()
+        formData.append('file', file)
+
         const res = await axios.post<{ avatarUrl: string }>(
           `${API_URL}/api/upload/uploadavatar`,
           formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          },
+          { headers: { 'Content-Type': 'multipart/form-data' } },
         )
 
-        // Update state immediately with the new URL returned by backend
         if (this.user) {
           this.user.avatarUrl = res.data.avatarUrl
         }
@@ -166,39 +137,43 @@ export const useAuthStore = defineStore('auth', {
         console.error('Upload failed', error)
         throw error
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
 
     async updateProfile(payload: { UserName?: string; Email?: string }) {
-      this.loading = true
+      this.isLoading = true
       try {
         await axios.put(`${API_URL}/api/user/profile`, payload)
+        await this.fetchCurrentUser()
       } finally {
-        this.loading = false
-        this.fetchCurrentUser()
+        this.isLoading = false
       }
     },
 
-    async updatePassword(CurrentPassword: string, NewPassword: string) {
-      this.loading = true
+    async updatePassword(currentPassword: string, newPassword: string) {
+      this.isLoading = true
       try {
         await axios.post(`${API_URL}/api/user/change-password`, {
-          CurrentPassword,
-          NewPassword,
+          CurrentPassword: currentPassword,
+          NewPassword: newPassword,
         })
       } finally {
-        this.loading = false
+        this.isLoading = false
       }
     },
 
     async deleteUser() {
+      this.isLoading = true
       try {
         await axios.delete(`${API_URL}/api/user/delete-user`)
-      } finally {
-        this.loading = false
         this.logout()
         router.push('/')
+      } catch (error) {
+        console.error('Failed to delete user', error)
+        throw error
+      } finally {
+        this.isLoading = false
       }
     },
 

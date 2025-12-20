@@ -53,13 +53,12 @@ public class NotificationService : INotificationService
             Title = notification.Title,
             Message = notification.Message,
             IsRead = notification.IsRead,
-            CreatedAt = notification.CreatedAt
+            CreatedAt = notification.CreatedAt,
+            FromUserId = notification.FromUserId
         };
-        
         // A. Ogólne powiadomienie (do listy powiadomień)
         await _hubContext.Clients.User(targetUserId.ToString())
             .SendAsync("ReceiveNotification", dto);
-
         return dto;
     }
 

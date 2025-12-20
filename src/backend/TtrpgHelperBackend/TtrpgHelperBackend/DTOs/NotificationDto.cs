@@ -8,4 +8,5 @@ public class NotificationDto
     public string Type { get; set; } // Np. "FriendRequest", "System"
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int? FromUserId { get; set; }
 }

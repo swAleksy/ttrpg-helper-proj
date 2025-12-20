@@ -1,23 +1,23 @@
 <script setup lang="ts">
+/**
+ * Notification Dropdown Component
+ * Displays list of notifications with mark as read functionality
+ */
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useNotificationStore } from '@/stores/notificationStore' // Adjust path if needed
+import { useNotificationStore } from '@/stores/notificationStore'
 
-// 1. Define Props (for the Close button)
 const props = defineProps<{
   onClose: () => void
 }>()
 
-// 2. Initialize Store
 const notificationStore = useNotificationStore()
 const { notifications, isLoading } = storeToRefs(notificationStore)
 
-// 3. Handlers
 const handleMarkAsRead = async (id: number) => {
   await notificationStore.markAsRead(id)
 }
 
-// 4. Lifecycle - Fetch on mount
 onMounted(() => {
   notificationStore.fetchNotifications()
 })

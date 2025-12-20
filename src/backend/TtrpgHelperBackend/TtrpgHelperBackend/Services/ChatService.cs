@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using TtrpgHelperBackend.DTOs;
+using TtrpgHelperBackend.Helpers;
 using TtrpgHelperBackend.MessagesAndNotofications;
 using TtrpgHelperBackend.Models;
 namespace TtrpgHelperBackend.Services;
@@ -17,11 +18,15 @@ public class ChatService :  IChatService
 {
     private readonly ApplicationDbContext _context;
     private readonly IHubContext<MainHub> _hubContext;
+    private readonly INotificationService _notificationService;
+    private readonly UserHelper _userHelper;
 
-    public ChatService(ApplicationDbContext db, IHubContext<MainHub> hubContext)
+    public ChatService(ApplicationDbContext db, IHubContext<MainHub> hubContext, INotificationService notificationService, UserHelper userHelper)
     {
         _context = db;
         _hubContext = hubContext;
+        _notificationService = notificationService;
+        _userHelper = userHelper;
     }
 
 // Dodano parametr senderName
@@ -60,11 +65,18 @@ public class ChatService :  IChatService
             SentAt = msg.SentAt,
             IsRead = msg.IsRead
         };
-
+        
         // 4. Wysyłka SignalR
         // Upewniamy się, że konwertujemy ID na string, bo SignalR User ID to string
         await _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceivePrivateMessage", msgDto);
         await _hubContext.Clients.User(senderId.ToString()).SendAsync("ReceivePrivateMessage", msgDto);
+        await _notificationService.SendNotification(
+            receiverId, 
+            NotificationType.NewMessage, 
+            "Nowa wiadomosc", 
+            $"Użytkownik {_userHelper.GetUserName()} wysłał Ci wiadomosc.", 
+            senderId
+        );
     }
     
     public async Task<List<MessageDto>> GetPrivateChatHistory(int userId, int otherUserId)

@@ -1,25 +1,15 @@
 <script setup lang="ts">
-import Navbar from '@/components/Navbar.vue'
-import { onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import ChatPanel from './components/ChatPanel.vue'
-
-// 1. Importujemy store czatu i helper z Pinia
-import { useChatStore } from '@/stores/chatStore'
+/**
+ * Root Application Component
+ * Contains Navbar, main content area, and chat panels
+ */
 import { storeToRefs } from 'pinia'
+import Navbar from '@/components/Navbar.vue'
+import ChatPanel from '@/components/ChatPanel.vue'
+import { useChatStore } from '@/stores/chatStore'
 
-const auth = useAuthStore()
-
-// 2. Inicjalizujemy store
 const chatStore = useChatStore()
-
-// 3. Wyciągamy activeChats jako reaktywny ref
-// Dzięki temu App.vue będzie wiedział, kiedy lista się zmieni
 const { activeChats } = storeToRefs(chatStore)
-
-onMounted(() => {
-  auth.initializeAuth()
-})
 </script>
 
 <template>
@@ -31,6 +21,7 @@ onMounted(() => {
     </main>
   </div>
 
+  <!-- Chat Windows -->
   <Teleport to="body">
     <div
       v-for="(user, index) in activeChats"
