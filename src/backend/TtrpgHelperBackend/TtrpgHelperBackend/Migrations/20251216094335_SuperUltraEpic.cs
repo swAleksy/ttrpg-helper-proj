@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TtrpgHelperBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class cossieznowrozpierdolilosuper : Migration
+    public partial class SuperUltraEpic : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

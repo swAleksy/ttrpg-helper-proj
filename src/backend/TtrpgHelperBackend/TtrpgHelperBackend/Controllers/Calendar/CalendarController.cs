@@ -56,6 +56,7 @@ public class CalendarController : ControllerBase
         return Ok(newEvent);
     }
     
+    [HttpPut("update/{id}")]
     public async Task<IActionResult> UpdateEvent(int id, [FromBody] UpdateCalendarEventDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -71,6 +72,7 @@ public class CalendarController : ControllerBase
         return Ok(updated);
     }
     
+    [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteEvent(int id)
     {
         var userId = _userHelper.GetUserId();
