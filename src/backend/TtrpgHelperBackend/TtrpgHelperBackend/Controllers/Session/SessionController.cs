@@ -74,7 +74,20 @@ public class SessionController : ControllerBase
         return Ok(sessions);
     }
     // -- PLAYER --
+    
+    [HttpGet("both/{id}")]
+    public async Task<ActionResult<GetSessionDto>> GetSessionForPlayerOrGm(int id)
+    {
+        var playerId = _userHelper.GetUserId();
+        if (playerId == null) return Unauthorized("User ID not found in token.");
 
+        var session = await _sessionService.GetSession(id, playerId.Value);
+        if (session == null)
+            return NotFound("Session not found or you are not a participant.");
+
+        return Ok(session);
+    }
+    
     // CREATE (GM only)
     [HttpPost("gm/create")]
     public async Task<ActionResult<GetSessionDto?>> CreateSession([FromBody] CreateSessionDto dto)

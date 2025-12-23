@@ -33,7 +33,10 @@ const navLinks = computed(() => {
   if (!isAuthenticated.value) {
     return [{ to: '/', label: 'Start' }]
   }
-  return [{ to: '/dashboard', label: 'Panel' }]
+  return [
+    { to: '/dashboard', label: 'Panel' },
+    { to: '/campaigns', label: 'Campaigns' },
+  ]
 })
 
 // Actions
@@ -122,7 +125,9 @@ watch(isAuthenticated, (isAuth) => {
                 :src="userAvatarUrl"
                 class="h-8 w-8 rounded-full object-cover border border-slate-800"
               />
-              <span class="hidden text-sm font-medium text-slate-200 lg:block group-hover:text-white">
+              <span
+                class="hidden text-sm font-medium text-slate-200 lg:block group-hover:text-white"
+              >
                 {{ username }}
               </span>
             </RouterLink>
@@ -134,7 +139,21 @@ watch(isAuthenticated, (isAuth) => {
                 class="relative p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
                 aria-label="Powiadomienia"
               >
-                🔔
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="h-5 w-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                  />
+                </svg>
+
                 <span
                   v-if="notificationCount > 0"
                   class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-900"
@@ -142,7 +161,10 @@ watch(isAuthenticated, (isAuth) => {
                   {{ notificationCount > 9 ? '9+' : notificationCount }}
                 </span>
               </button>
-              <NotificationDropdown v-if="showNotificationDropdown" :onClose="toggleNotificationDropdown" />
+              <NotificationDropdown
+                v-if="showNotificationDropdown"
+                :onClose="toggleNotificationDropdown"
+              />
             </div>
 
             <!-- Friends Button -->
@@ -152,7 +174,21 @@ watch(isAuthenticated, (isAuth) => {
                 class="relative p-2 rounded-full bg-emerald-600 hover:bg-slate-700 text-slate-300 transition"
                 aria-label="Znajomi"
               >
-                👥
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="h-5 w-5"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"
+                  />
+                </svg>
+
                 <span
                   v-if="friendRequestCount > 0"
                   class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-900"
@@ -199,11 +235,22 @@ watch(isAuthenticated, (isAuth) => {
           {{ link.label }}
         </RouterLink>
 
-        <div v-if="!isAuthenticated" class="mt-4 flex flex-col gap-2 border-t border-slate-800 pt-4">
-          <RouterLink to="/login" class="w-full text-center py-2 text-slate-300" @click="isMobileMenuOpen = false">
+        <div
+          v-if="!isAuthenticated"
+          class="mt-4 flex flex-col gap-2 border-t border-slate-800 pt-4"
+        >
+          <RouterLink
+            to="/login"
+            class="w-full text-center py-2 text-slate-300"
+            @click="isMobileMenuOpen = false"
+          >
             Zaloguj
           </RouterLink>
-          <RouterLink to="/register" class="w-full text-center py-2 bg-emerald-600 rounded-lg text-white" @click="isMobileMenuOpen = false">
+          <RouterLink
+            to="/register"
+            class="w-full text-center py-2 bg-emerald-600 rounded-lg text-white"
+            @click="isMobileMenuOpen = false"
+          >
             Rejestracja
           </RouterLink>
         </div>
@@ -213,8 +260,13 @@ watch(isAuthenticated, (isAuth) => {
             to="/profile"
             class="group flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/50 pr-4 pl-1 py-1 transition hover:bg-slate-800 hover:border-slate-500"
           >
-            <img :src="userAvatarUrl" class="h-8 w-8 rounded-full object-cover border border-slate-800" />
-            <span class="text-sm font-medium text-slate-200 group-hover:text-white">{{ username }}</span>
+            <img
+              :src="userAvatarUrl"
+              class="h-8 w-8 rounded-full object-cover border border-slate-800"
+            />
+            <span class="text-sm font-medium text-slate-200 group-hover:text-white">{{
+              username
+            }}</span>
           </RouterLink>
 
           <div class="mt-4 border-t border-slate-800 pt-4">

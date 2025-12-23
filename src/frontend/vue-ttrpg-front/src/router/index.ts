@@ -48,6 +48,38 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/CharacterCreate.vue'),
     meta: { requiresAuth: true }, // tylko dla zalogowanych
   },
+  {
+    path: '/campaigns',
+    name: 'Campaigns',
+    component: () => import('@/views/Campaigns/CampaignsView.vue'),
+    meta: { requiresAuth: true }, // tylko dla zalogowanych
+  },
+  {
+    path: '/campaigns/new',
+    name: 'CampaignCreate',
+    component: () => import('@/views/Campaigns/CampaignsCreator.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/campaigns/:id',
+    name: 'Campaign',
+    component: () => import('@/views/Campaigns/CampaignView.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+    path: '/session/new',
+    name: 'SessionCreate',
+    component: () => import('@/views/Campaigns/session/SessionCreator.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/session/:id',
+    name: 'Session',
+    component: () => import('@/views/Campaigns/session/SessionView.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },
 ]
 
 const router = createRouter({

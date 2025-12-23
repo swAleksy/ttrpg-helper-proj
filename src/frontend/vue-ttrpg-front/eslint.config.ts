@@ -18,5 +18,26 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+
+  {
+    files: ['**/*.vue'],
+    rules: {
+      // Disable TS rule (not Vue-aware)
+      '@typescript-eslint/no-unused-vars': 'warn',
+
+      // Use Vue's version instead
+      'vue/no-unused-vars': 'warn',
+      'vue/multi-word-component-names': 'warn',
+    },
+  },
+
+  // 👇 Plain TS files
+  {
+    files: ['**/*.{ts,mts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'warn',
+    },
+  },
+
   skipFormatting,
 )

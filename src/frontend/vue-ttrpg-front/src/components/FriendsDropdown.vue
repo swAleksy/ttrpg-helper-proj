@@ -67,7 +67,16 @@ onMounted(() => {
       class="absolute top-2 right-2 text-slate-500 hover:text-white transition-colors p-1"
       aria-label="Zamknij menu"
     >
-      X
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="h-5 w-5"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+      </svg>
     </button>
     <label class="block text-sm text-slate-400 m-2 px-1">Dodaj Znajomego</label>
     <div class="flex gap-2 px-1 mb-4">
@@ -80,10 +89,25 @@ onMounted(() => {
       <button
         @click="handleSendRequest"
         :disabled="isLoading || !friendForm.id"
-        class="whitespace-nowrap rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="flex items-center justify-center whitespace-nowrap rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
-        <span v-if="isLoading">...</span>
-        <span v-else>+</span>
+        <span v-if="isLoading" class="flex gap-1">
+          <span class="animate-pulse">.</span
+          ><span class="animate-pulse [animation-delay:0.2s]">.</span
+          ><span class="animate-pulse [animation-delay:0.4s]">.</span>
+        </span>
+
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="h-5 w-5"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
       </button>
     </div>
 

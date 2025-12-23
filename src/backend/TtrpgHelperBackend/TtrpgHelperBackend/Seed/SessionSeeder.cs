@@ -26,13 +26,43 @@ public class SessionSeeder
             Description = "A mysterious ancient city revealed after a planar anomaly.",
             GameMasterId = 3
         };
+        var campaign3 = new Campaign
+        {
+            Name = "Lost Ruins of 2",
+            Description = "A mysterious ancient city revealed after a planar anomaly.",
+            GameMasterId = 3
+        };
+        var campaign4 = new Campaign
+        {
+            Name = "Lost Ruins of 3",
+            Description = "A mysterious ancient city revealed after a planar anomaly.",
+            GameMasterId = 3
+        };
+        var campaign5 = new Campaign
+        {
+            Name = "Lost Ruins of 4",
+            Description = "A mysterious ancient city revealed after a planar anomaly.",
+            GameMasterId = 3
+        };
+        var campaign6 = new Campaign
+        {
+            Name = "Lost Ruins of 5",
+            Description = "A mysterious ancient city revealed after a planar anomaly.",
+            GameMasterId = 3
+        };
+        var campaign7 = new Campaign
+        {
+            Name = "Lost Ruins of 6",
+            Description = "A mysterious ancient city revealed after a planar anomaly.",
+            GameMasterId = 3
+        };
         var campaign2 = new Campaign
         {
             Name = "Floating Isles of Nethereese",
             Description = "Long lost shard of an empire fallen a long time ago.",
             GameMasterId = 4
         };
-        db.Campaigns.AddRange(campaign1, campaign2);
+        db.Campaigns.AddRange(campaign1, campaign2,campaign3,campaign4,campaign5,campaign6);
         await db.SaveChangesAsync();
         
         // ==============

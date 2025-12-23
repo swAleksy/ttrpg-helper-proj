@@ -55,3 +55,28 @@ export interface MessageDto {
   sentAt: string
   isRead: boolean
 }
+
+// ============== Campaign ==============
+
+export interface PlayerDto {
+  playerId: number
+  playerName: string
+}
+
+export interface SessionDto {
+  id: number
+  name: string
+  description: string | null
+  scheduledDate: string
+  status: string
+  players: PlayerDto[]
+}
+
+export interface GameCampaignDto {
+  id: number
+  name: string
+  description: string | null
+  gameMasterId: number
+  gameMasterName: string
+  sessions: SessionDto[]
+}

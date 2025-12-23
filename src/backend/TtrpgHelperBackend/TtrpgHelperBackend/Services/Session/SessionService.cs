@@ -12,6 +12,7 @@ public interface ISessionService
     
     Task<GetSessionDto?> GetSessionForPlayer(int id, int playerId);
     Task<IEnumerable<GetSessionDto>> GetSessionsForPlayer(int playerId, string? status = null);
+     Task<GetSessionDto?> GetSession(int id, int userId);
     
     Task<GetSessionDto?> CreateSession(CreateSessionDto dto, int gameMasterId);
     Task<GetSessionDto?> UpdateSession(UpdateSessionDto dto, int gameMasterId);
@@ -87,6 +88,17 @@ public class SessionService : ISessionService
             .ToListAsync();
     }
     // -- PLAYER --
+    
+    public async Task<GetSessionDto?> GetSession(int id, int userId)
+    {
+        var session = await _db.Sessions
+            .Include(s => s.Players).ThenInclude(p => p.Player)
+            .Include(s => s.Campaign).ThenInclude(c => c.GameMaster)
+            .FirstOrDefaultAsync(s => s.Id == id && 
+                                      (s.Players.Any(p => p.PlayerId == userId) || s.Campaign.GameMasterId == userId));
+
+        return session == null ? null : Dto(session);
+    }
     
     public async Task<GetSessionDto?> CreateSession(CreateSessionDto dto, int gameMasterId)
     {

@@ -81,9 +81,14 @@ public class CampaignService : ICampaignService
     
     public async Task<IEnumerable<GetCampaignDto>> GetCampaignsForPlayer(int playerId, string? status = null)
     {
+        // var query = _db.Campaigns
+        //     .Where(c =>
+        //         !c.Sessions.Any() ||
+        //         c.Sessions.Any(s => s.Players.Any(p => p.PlayerId == playerId)));
+
         var query = _db.Campaigns
             .Where(c => c.Sessions.Any(s => s.Players.Any(p => p.PlayerId == playerId)));
-
+        
         if (!string.IsNullOrEmpty(status)) query = query.Where(c => c.Status == status);
 
         query = query
