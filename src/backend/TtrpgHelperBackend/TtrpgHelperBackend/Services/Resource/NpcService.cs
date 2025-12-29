@@ -205,6 +205,7 @@ public class NpcService : INpcService
         var npc = new Npc
         {
             CampaignId = null,
+            IsCompendium = true,
             Name = dto.Name,
             Description = dto.Description,
             RaceId = dto.RaceId,

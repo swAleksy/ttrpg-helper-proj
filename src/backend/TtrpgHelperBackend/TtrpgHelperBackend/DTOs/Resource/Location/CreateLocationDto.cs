@@ -6,7 +6,8 @@ namespace TtrpgHelperBackend.DTOs.Resource.Location;
 
 public class CreateLocationDto
 {
-    public int? CampaignId { get; set; }
+    [Required]
+    public int CampaignId { get; set; }
 
     [Required]
     [MaxLength(50)]

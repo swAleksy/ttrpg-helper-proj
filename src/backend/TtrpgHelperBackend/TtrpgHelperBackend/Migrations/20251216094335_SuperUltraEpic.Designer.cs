@@ -12,8 +12,8 @@ using TtrpgHelperBackend;
 namespace TtrpgHelperBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251213205530_cossieznowrozpierdolilosuper")]
-    partial class cossieznowrozpierdolilosuper
+    [Migration("20251216094335_SuperUltraEpic")]
+    partial class SuperUltraEpic
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

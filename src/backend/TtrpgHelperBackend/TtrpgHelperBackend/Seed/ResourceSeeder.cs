@@ -182,7 +182,7 @@ public static class ResourcesSeeder
             );
             await db.SaveChangesAsync();
             
-            // ==============================
+            // ===========================
             // LINK EVERYTHING TO CHAPTERS
             db.ScenarioChapterNotes.AddRange(
                 new ScenarioChapterNote { ScenarioChapterId = chapter1.Id, NoteId = note1.Id },

@@ -72,7 +72,7 @@ public class CalendarController : ControllerBase
         return Ok(updated);
     }
     
-    [HttpDelete("event/{id}")]
+    [HttpDelete("delete/{id}")]
     public async Task<IActionResult> DeleteEvent(int id)
     {
         var userId = _userHelper.GetUserId();

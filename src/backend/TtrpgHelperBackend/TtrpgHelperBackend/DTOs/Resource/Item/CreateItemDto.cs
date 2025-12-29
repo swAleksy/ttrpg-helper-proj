@@ -4,7 +4,8 @@ namespace TtrpgHelperBackend.DTOs.Resource.Item;
 
 public class CreateItemDto
 {
-    public int? CampaignId { get; set; }
+    [Required]
+    public int CampaignId { get; set; }
     
     [Required]
     [MaxLength(50)]
