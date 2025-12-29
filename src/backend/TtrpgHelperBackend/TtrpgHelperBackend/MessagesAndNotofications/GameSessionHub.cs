@@ -1,77 +1,107 @@
 ﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using TtrpgHelperBackend.Services;
+using TtrpgHelperBackend.DTOs.Session;
+using TtrpgHelperBackend.Models.Session;
+using TtrpgHelperBackend.Services.Session;
 
 namespace TtrpgHelperBackend.MessagesAndNotofications;
 
 [Authorize]
 public class GameSessionHub : Hub
 {
-    private readonly ChatService _chatService;
-    //private readonly ISessionService _sessionService;
+    private readonly ISessionService _sessionService;
+    private readonly ISessionEventService _sessionEventService;
     
-    public GameSessionHub(ChatService chatService)
+    public GameSessionHub(ISessionService sessionService, ISessionEventService sessionEventService)
     {
-        _chatService = chatService;
-        // _sessionService = sessionService;
+        _sessionService = sessionService;
+        _sessionEventService = sessionEventService;
     }
-    private string GetUserId()
+    
+    // ==================
+    // -- SESSION CHAT --
+    public async Task SendSessionMessage(int sessionId, string message)
+    {
+        var userId =  GetUserId();
+        if (!await _sessionService.CheckAccess(userId, sessionId)) throw new HubException("No access to this session");
+        
+        await BroadcastEvent(
+            new CreateSessionEventDto
+            {
+                SessionId = sessionId,
+                Type = SessionEventTypes.Chat,
+                DataJson = JsonSerializer.Serialize(new { message })
+            },
+            userId
+        );
+    }
+
+    
+    // ==========================
+    // -- SESSION JOIN / LEAVE --
+    public async Task JoinSession(int sessionId)
+    {
+        var userId = GetUserId();
+        if (!await _sessionService.CheckAccess(userId, sessionId)) throw new HubException("No access to this session");
+        
+        await Groups.AddToGroupAsync(Context.ConnectionId, sessionId.ToString());
+        
+        await BroadcastEvent(
+            new CreateSessionEventDto
+            {
+                SessionId = sessionId,
+                Type = SessionEventTypes.UserJoined,
+                DataJson = "{}"
+            },
+            userId
+        );
+    }
+
+    public async Task LeaveSession(int sessionId)
+    {
+        var userId = GetUserId();
+        
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId.ToString());
+        
+        await BroadcastEvent(
+            new CreateSessionEventDto
+            {
+                SessionId = sessionId,
+                Type = SessionEventTypes.UserLeft,
+                DataJson = "{}"
+            },
+            userId
+        );
+    }
+    
+    
+    // ====================
+    // -- HELPER METHODS --
+    private int GetUserId()
     {
         var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) throw new HubException("Unauthorized.");
 
-        if (string.IsNullOrEmpty(userId))
-            throw new HubException("Unauthorized: User ID claim (NameIdentifier) is missing.");
-        return userId;
+        return int.Parse(userId);
+    }
+
+    private async Task BroadcastEvent(CreateSessionEventDto dto, int userId)
+    {
+        var savedEvent = await _sessionEventService.CreateEvent(dto, userId);
+        if (savedEvent == null) throw new HubException("Could not create session event.");
+
+        await Clients.Group(dto.SessionId.ToString()).SendAsync("SessionEventCreated", savedEvent);
     }
     
-    public async Task SendSessionMessage(string sessionId, string message)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        var senderId =  GetUserId();
-        
-        await _chatService.SaveSessionMessage(int.Parse(senderId), int.Parse(sessionId), message);
-        // Persist message
-        await Clients.Group(sessionId).SendAsync("ReceiveSessionMessage", senderId, new
-        {
-            Message = message,
-            TimeStamp = DateTime.Now,
-            Type = "chat"
-        });
-    }
+        var userIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return;
 
-    // public async Task RollDice(string sessionId, string diceExpression) 
-    // {
-    //     var userId = GetUserId();
-    //     // Logika rzutu 
-    //     var rollResult = _sessionService.diceRoll(diceExpression);
-    //
-    //     // Wysyłamy wynik do wszystkich w sesji - nie tylko czat, ale np. animacja na ekranie
-    //     await Clients.Group(sessionId).SendAsync("DiceRolled", new 
-    //     {
-    //         User = userId,
-    //         Result = rollResult,
-    //         Expression = diceExpression
-    //     });
-    // }
-    
-    public async Task JoinSession(string sessionId)
-    {
-        var userId = GetUserId();
-        //bool hasAccess = await _sessionService.UserHasAccessToSession(userId, sessionId);
-        if (false)
-        {
-            throw new HubException("Nie masz dostępu do tej sesji.");
-        }
-        
-        await Groups.AddToGroupAsync(Context.ConnectionId, sessionId);
-        
-        await Clients.Group(sessionId).SendAsync("UserJoined", userId);
-    }
+        var userId = int.Parse(userIdClaim);
 
-    public async Task LeaveSession(string sessionId)
-    {
-        var userId = GetUserId();
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId);
-        await Clients.Group(sessionId).SendAsync("UserLeft", userId);
+        await base.OnDisconnectedAsync(exception);
     }
 }

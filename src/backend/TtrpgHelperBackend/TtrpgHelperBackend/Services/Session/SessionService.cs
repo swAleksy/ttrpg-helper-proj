@@ -27,6 +27,10 @@ public interface ISessionService
     Task<bool> ArchiveSession(int id, int gameMasterId);
     Task<bool> DeleteSession(int id, int gameMasterId);
     Task<GetSessionDto?> AddPlayer(int sessionId, int gameMasterId, int playerId);
+    
+    // ============
+    // -- ACCESS --
+    Task<bool> CheckAccess(int userId, int sessionId);
 }
 
 public class SessionService : ISessionService
@@ -230,6 +234,18 @@ public class SessionService : ISessionService
         return Dto(session!);
     }
     
+    
+    // ============
+    // -- ACCESS --
+    public async Task<bool> CheckAccess(int userId, int sessionId)
+    {
+        return await _db.Sessions
+            .AnyAsync(
+                s => 
+                    s.Id == sessionId &&
+                    (s.Campaign.GameMasterId == userId || s.Players.Any(p => p.PlayerId == userId))
+            );
+    }
     
     // ====================
     // -- HELPER METHODS --
