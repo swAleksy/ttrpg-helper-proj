@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -47,6 +48,13 @@ public class Program
         builder.Services.AddOpenApi();
         builder.Services.AddControllers();
         
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                // This converts Enums to Strings globally
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
+        
         builder.Services.Configure<RouteOptions>(options =>
         {
             options.LowercaseUrls = true; 
@@ -76,7 +84,7 @@ public class Program
                     {
                         var accessToken = context.Request.Query["access_token"].FirstOrDefault();
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/mainHub") || path.StartsWithSegments("/notificationHub")))
+                        if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments("/mainHub") || path.StartsWithSegments("/GameSessionHub")))
                         {
                             context.Token = accessToken;
                         }
@@ -101,6 +109,7 @@ public class Program
         // -- SESSION --
         builder.Services.AddScoped<ICampaignService, CampaignService>();
         builder.Services.AddScoped<ISessionService, SessionService>();
+        builder.Services.AddScoped<ISessionEventService, SessionEventService>();
         
         // ==============
         // -- RESOURCE --
@@ -147,7 +156,7 @@ public class Program
         //app.UseHttpsRedirection();
         
         app.MapHub<MainHub>("/mainHub");
-        app.MapHub<GameSessionHub>("/notificationHub");
+        app.MapHub<GameSessionHub>("/GameSessionHub");
 
         app.Run();
     }

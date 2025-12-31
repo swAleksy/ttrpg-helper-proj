@@ -39,9 +39,11 @@ const openSession = (sessionId: number) => {
   router.push(`/session/${sessionId}`)
 }
 
-const handleCreateSession = async () => {
-  await campaignStore.createSession()
-  router.push(`/campaign/${props.id}/session/new`)
+const handleCreateSession = () => {
+  router.push({
+    name: 'SessionCreate',
+    params: { campaignId: String(props.id) },
+  })
 }
 
 const handleDeleteSession = async (sessionId: number) => {
@@ -143,6 +145,34 @@ onMounted(async () => {
         v-if="campaign.sessions && campaign.sessions.length > 0"
         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
       >
+        <button
+          @click="handleCreateSession"
+          class="group relative flex flex-col items-center justify-center h-64 bg-slate-950/80 border-2 border-dashed border-slate-700 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:bg-emerald-500/5"
+        >
+          <div
+            class="p-4 rounded-full bg-slate-900 group-hover:bg-emerald-500/20 transition-colors duration-300"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 text-slate-400 group-hover:text-emerald-400 transition-colors"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </div>
+          <span
+            class="mt-4 font-bold text-slate-400 group-hover:text-emerald-400 tracking-tight transition-colors"
+          >
+            Utwórz nową Sesję
+          </span>
+        </button>
         <div
           v-for="session in campaign.sessions"
           :key="session.id"

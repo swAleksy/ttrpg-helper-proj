@@ -68,10 +68,11 @@ const routes: RouteRecordRaw[] = [
     props: true,
   },
   {
-    path: '/session/new',
+    path: '/campaigns/:campaignId/session/new',
     name: 'SessionCreate',
     component: () => import('@/views/Campaigns/session/SessionCreator.vue'),
     meta: { requiresAuth: true },
+    props: true,
   },
   {
     path: '/session/:id',

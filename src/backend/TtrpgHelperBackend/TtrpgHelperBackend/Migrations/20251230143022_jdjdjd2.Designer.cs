@@ -12,8 +12,8 @@ using TtrpgHelperBackend;
 namespace TtrpgHelperBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251216094335_SuperUltraEpic")]
-    partial class SuperUltraEpic
+    [Migration("20251230143022_jdjdjd2")]
+    partial class jdjdjd2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -307,7 +307,7 @@ namespace TtrpgHelperBackend.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
-                    b.Property<int?>("Type")
+                    b.Property<int>("Type")
                         .HasColumnType("integer");
 
                     b.Property<int>("UserId")
@@ -827,10 +827,9 @@ namespace TtrpgHelperBackend.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
+                    b.Property<int>("Type")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");

@@ -14,6 +14,8 @@ public interface IUserService
     Task<User?> Register(UserRegisterDto request);
     Task<TokenResponseDto?> Login(UserLoginDto request);
     Task<TokenResponseDto?> RefreshTokens(TokenRefreshDto request);
+    Task<User?> GetUserById(int id);
+    
     Task<ServiceResponseH<bool>> ChangePasswordAsync(int userId, ChangePasswordDto request);
     Task<ServiceResponseH<User>> UpdateUserProfileAsync(int userId, UpdateUserProfileDto request);
 }
@@ -107,7 +109,16 @@ public class UserService : IUserService
             
             return await CreateTokenResponse(user);
     }
-
+    
+    public async Task<User?> GetUserById(int id)
+    {
+        var user = await _context.Users
+            .Include(r => r.UserRoles)
+            .ThenInclude(ur => ur.Role)
+            .FirstOrDefaultAsync(c => c.Id == id);
+        
+        return user;
+    }
     private async Task<TokenResponseDto> CreateTokenResponse(User user)
     {
         var response = new TokenResponseDto

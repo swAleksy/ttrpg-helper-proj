@@ -52,7 +52,7 @@ onMounted(() => {
           'bg-slate-900 hover:bg-slate-800/50': n.isRead,
         }"
       >
-        <div class="flex-grow min-w-0 pr-3">
+        <div class="grow min-w-0 pr-3">
           <span
             v-if="!n.isRead"
             class="block h-2 w-2 rounded-full bg-emerald-500 float-left mr-2 mt-1"
@@ -73,12 +73,12 @@ onMounted(() => {
         <button
           v-if="!n.isRead"
           @click="handleMarkAsRead(n.id)"
-          class="flex-shrink-0 ml-2 mt-0.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-200/20 rounded-md text-sm font-medium p-1 transition-opacity"
+          class="shrink-0 ml-2 mt-0.5 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-200/20 rounded-md text-sm font-medium p-1 transition-opacity"
           aria-label="Oznacz jako przeczytane"
         >
           ✓
         </button>
-        <div v-else class="flex-shrink-0 ml-2 mt-0.5 text-slate-600 text-sm font-medium p-1">✓</div>
+        <div v-else class="shrink-0 ml-2 mt-0.5 text-slate-600 text-sm font-medium p-1">✓</div>
       </div>
     </div>
   </div>

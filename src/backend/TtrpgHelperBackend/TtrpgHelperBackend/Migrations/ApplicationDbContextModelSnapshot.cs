@@ -824,10 +824,9 @@ namespace TtrpgHelperBackend.Migrations
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
+                    b.Property<int>("Type")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");

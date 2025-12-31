@@ -109,8 +109,8 @@ public class SessionSeeder
         {
             foreach (var userId in uniquePlayers)
             {
-                if (userId == session.Campaign.GameMasterId) 
-                    continue;
+                // if (userId == session.Campaign.GameMasterId) 
+                //     continue;
 
                 db.SessionPlayers.Add(new SessionPlayer
                 {
@@ -129,7 +129,7 @@ public class SessionSeeder
             {
                 SessionId = session1.Id,
                 UserId = 3,
-                Type = "Dice roll",
+                Type = SessionEventType.DiceRoll,
                 DataJson = "{ \"dice\": \"d20\", \"result\": 14 }",
                 Timestamp = DateTime.Now.AddMinutes(10),
             },
@@ -138,7 +138,7 @@ public class SessionSeeder
             {
                 SessionId = session1.Id,
                 UserId = 5,
-                Type = "Dice roll",
+                Type = SessionEventType.DiceRoll,
                 DataJson = "{ \"dice\": \"d100\", \"result\": 55 }",
                 Timestamp = DateTime.Now.AddMinutes(12),
             },
@@ -147,7 +147,7 @@ public class SessionSeeder
             {
                 SessionId = session2.Id,
                 UserId = 4,
-                Type = "Dice roll",
+                Type = SessionEventType.DiceRoll,
                 DataJson = "{ \"dice\": \"d10\", \"result\": 6 }",
                 Timestamp = DateTime.Now.AddMinutes(14),
             },
@@ -156,7 +156,7 @@ public class SessionSeeder
             {
                 SessionId = session3.Id,
                 UserId = 4,
-                Type = "Dice roll",
+                Type = SessionEventType.DiceRoll,
                 DataJson = "{ \"dice\": \"d6\", \"result\": 3 }",
                 Timestamp = DateTime.Now.AddMinutes(20),
             }

@@ -60,6 +60,7 @@ public class UserController : ControllerBase
             return Ok(result);
     }
 
+
     [HttpPost("refresh-token")]
     public async Task<ActionResult<TokenResponseDto>> RefreshToken(TokenRefreshDto request)
     {
@@ -119,11 +120,8 @@ public class UserController : ControllerBase
         {
             return BadRequest("Token issue: Claim not found"); 
         }
-    
-        var user = await _context.Users
-            .Include(r => r.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(c => c.Id == userId);
+
+        var user = await _userService.GetUserById(userId.Value);
 
         if (user == null)
         {
@@ -140,6 +138,27 @@ public class UserController : ControllerBase
         return Ok(userData);
     }
 
+    [HttpGet("info/{id}")]
+    public async Task<ActionResult<UserInfoDto>> GetInfo(int id)
+    {
+        var user = await _userService.GetUserById(id);
+
+        if (user == null)
+        {
+            return NotFound("User ID from token not found in DB.");
+        }
+
+        var userData = new UserInfoDto
+        {
+            Id  = user.Id,
+            UserName = user.UserName,
+            Email = user.Email,
+            AvatarUrl = user.AvatarUrl,
+        };
+        
+        return userData;
+    }
+    
     [Authorize]
     [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser()

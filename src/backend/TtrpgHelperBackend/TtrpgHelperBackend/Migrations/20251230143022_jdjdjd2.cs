@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace TtrpgHelperBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class SuperUltraEpic : Migration
+    public partial class jdjdjd2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,7 +49,7 @@ namespace TtrpgHelperBackend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: true),
+                    Type = table.Column<int>(type: "integer", nullable: false),
                     Title = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     FromUserId = table.Column<int>(type: "integer", nullable: true),
@@ -540,7 +540,7 @@ namespace TtrpgHelperBackend.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SessionId = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
-                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Type = table.Column<int>(type: "integer", maxLength: 50, nullable: false),
                     DataJson = table.Column<string>(type: "text", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },

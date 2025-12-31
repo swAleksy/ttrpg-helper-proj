@@ -31,7 +31,7 @@ public class GameSessionHub : Hub
             new CreateSessionEventDto
             {
                 SessionId = sessionId,
-                Type = SessionEventTypes.Chat,
+                Type = SessionEventType.ChatMessage,
                 DataJson = JsonSerializer.Serialize(new { message })
             },
             userId
@@ -48,12 +48,16 @@ public class GameSessionHub : Hub
         
         await Groups.AddToGroupAsync(Context.ConnectionId, sessionId.ToString());
         
-        await BroadcastEvent(
+        await BroadcastEventNoDbSave(
             new CreateSessionEventDto
             {
                 SessionId = sessionId,
-                Type = SessionEventTypes.UserJoined,
-                DataJson = "{}"
+                Type = SessionEventType.UserJoined,
+                DataJson = JsonSerializer.Serialize(new
+                {
+                    userId = userId,
+                    userName = Context.User?.FindFirstValue(ClaimTypes.Name)
+                })
             },
             userId
         );
@@ -64,16 +68,19 @@ public class GameSessionHub : Hub
         var userId = GetUserId();
         
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, sessionId.ToString());
-        
-        await BroadcastEvent(
+        await BroadcastEventNoDbSave(
             new CreateSessionEventDto
             {
                 SessionId = sessionId,
-                Type = SessionEventTypes.UserLeft,
-                DataJson = "{}"
+                Type = SessionEventType.UserLeft,
+                DataJson = JsonSerializer.Serialize(new
+                {
+                    userId = userId,
+                    userName = Context.User?.FindFirstValue(ClaimTypes.Name)
+                })
             },
             userId
-        );
+            );
     }
     
     
@@ -93,6 +100,12 @@ public class GameSessionHub : Hub
         if (savedEvent == null) throw new HubException("Could not create session event.");
 
         await Clients.Group(dto.SessionId.ToString()).SendAsync("SessionEventCreated", savedEvent);
+    }
+    
+    private async Task BroadcastEventNoDbSave(CreateSessionEventDto dto, int userId)
+    {
+        var nonSavedEvent = await _sessionEventService.CreateEventWithoutSave(dto, userId);
+        await Clients.Group(dto.SessionId.ToString()).SendAsync("SessionEventCreated", nonSavedEvent);
     }
     
     public override async Task OnDisconnectedAsync(Exception? exception)

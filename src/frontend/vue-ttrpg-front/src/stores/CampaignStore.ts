@@ -161,12 +161,22 @@ export const useCampaignStore = defineStore('campaign', {
       }
     },
 
-    async createSession() {
+    async createSession(name: string, desc: string, scheduledDate: string, campaignId: number) {
       try {
-        const response = await axios.post(`${API_URL}/api/session/gm/create​`)
-        // Add the new session to the list immediately so the UI updates
-        this.session = response.data
+        const response = await axios.post(`${API_URL}/api/session/gm/create`, {
+          name: name,
+          description: desc,
+          scheduledDate: scheduledDate,
+          campaignId: campaignId,
+        })
 
+        // Możesz chcieć zaktualizować listę sesji w konkretnej kampanii po dodaniu
+        const campaign = this.gmCampaigns.find((c) => c.id === campaignId)
+        if (campaign && campaign.sessions) {
+          campaign.sessions.push(response.data)
+        }
+
+        this.session = response.data
         return true
       } catch (error) {
         console.error('Failed to create session', error)

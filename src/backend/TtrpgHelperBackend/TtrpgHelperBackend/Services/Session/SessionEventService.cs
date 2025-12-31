@@ -7,6 +7,7 @@ namespace TtrpgHelperBackend.Services.Session;
 public interface ISessionEventService
 {
     Task<GetSessionEventDto?> CreateEvent(CreateSessionEventDto dto, int userId);
+    Task<GetSessionEventDto?> CreateEventWithoutSave(CreateSessionEventDto dto, int userId);
     Task<IEnumerable<GetSessionEventDto>> GetEventsForSession(int sessionId);
 }
 
@@ -42,6 +43,27 @@ public class SessionEventService : ISessionEventService
         return Dto(sessionEvent);
     }
 
+    public async Task<GetSessionEventDto?> CreateEventWithoutSave(CreateSessionEventDto dto, int userId)
+    {
+        if (!await _db.Sessions.AnyAsync(s => s.Id == dto.SessionId)) return null;
+        
+        var userName = await _db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.UserName) 
+            .FirstOrDefaultAsync();
+        
+        return new GetSessionEventDto
+        {
+            Id = 0,
+            SessionId = dto.SessionId,
+            Type = dto.Type,
+            DataJson = dto.DataJson,
+            Timestamp = DateTime.Now,
+            UserId = userId,
+            UserName = userName 
+        };
+    }
+    
     public async Task<IEnumerable<GetSessionEventDto>> GetEventsForSession(int sessionId)
     {
         var sessionEvents = await _db.SessionEvents

@@ -21,11 +21,21 @@ public class SessionEvent
     
     [Required]
     [MaxLength(50)]
-    public string Type { get; set; } = string.Empty;
+    public SessionEventType Type { get; set; }
     
     public string DataJson { get; set; } = string.Empty;
     
     [Required]
     [DataType(DataType.DateTime)]
     public DateTime Timestamp { get; set; } = DateTime.Now;
+}
+
+public enum SessionEventType
+{
+    ChatMessage,
+    DiceRoll,
+    ShareItem,
+    ShareNpc,
+    UserJoined,
+    UserLeft
 }

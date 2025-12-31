@@ -98,6 +98,10 @@ public class SessionController : ControllerBase
         var newSession = await _sessionService.CreateSession(dto, gameMasterId.Value);
         if (newSession == null) return BadRequest("You cannot create a session in a campaign you do not own.");
         
+        var sessionId = newSession.Id;
+        var updated = await _sessionService.AddPlayer(sessionId, gameMasterId.Value, gameMasterId.Value);
+        if (updated == null) return NotFound("Could not add admin to session.");
+        
         return Ok(newSession);
     }
 

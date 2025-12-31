@@ -1,4 +1,7 @@
-﻿namespace TtrpgHelperBackend.DTOs.Session;
+﻿using System.Text.Json.Serialization;
+using TtrpgHelperBackend.Models.Session;
+
+namespace TtrpgHelperBackend.DTOs.Session;
 
 public class GetSessionEventDto
 {
@@ -6,7 +9,8 @@ public class GetSessionEventDto
     
     public int SessionId { get; set; }
     
-    public string Type { get; set; } = string.Empty;
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public SessionEventType Type { get; set; }
     
     public string DataJson { get; set; } = string.Empty;
     

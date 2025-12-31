@@ -114,16 +114,16 @@ public class SessionService : ISessionService
             .ToListAsync();
     }
     
-    // public async Task<GetSessionDto?> GetSession(int id, int userId)
-    // {
-    //     var session = await _db.Sessions
-    //         .Include(s => s.Players).ThenInclude(p => p.Player)
-    //         .Include(s => s.Campaign).ThenInclude(c => c.GameMaster)
-    //         .FirstOrDefaultAsync(s => s.Id == id && 
-    //                                   (s.Players.Any(p => p.PlayerId == userId) || s.Campaign.GameMasterId == userId));
+    public async Task<GetSessionDto?> GetSession(int id, int userId)
+    {
+        var session = await _db.Sessions
+            .Include(s => s.Players).ThenInclude(p => p.Player)
+            .Include(s => s.Campaign).ThenInclude(c => c.GameMaster)
+            .FirstOrDefaultAsync(s => s.Id == id && 
+                                      (s.Players.Any(p => p.PlayerId == userId) || s.Campaign.GameMasterId == userId));
 
-    //     return session == null ? null : Dto(session);
-    // }
+        return session == null ? null : Dto(session);
+    }
     
     
     // ================

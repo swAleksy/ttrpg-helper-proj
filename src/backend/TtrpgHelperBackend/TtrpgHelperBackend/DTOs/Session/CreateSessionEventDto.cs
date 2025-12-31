@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TtrpgHelperBackend.Models.Session;
 
 namespace TtrpgHelperBackend.DTOs.Session;
 
@@ -8,8 +9,6 @@ public class CreateSessionEventDto
     public int SessionId { get; set; }
     
     [Required]
-    [MaxLength(50)]
-    public string Type { get; set; } = string.Empty;
-    
+    public SessionEventType Type { get; set; } 
     public string DataJson { get; set; } = string.Empty;
 }

@@ -1,57 +1,72 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { onMounted, onBeforeUnmount, computed, ref, nextTick, watch } from 'vue'
+import type { ChatMessagePayload, DiceRollPayload } from '@/types'
 import { useRoute } from 'vue-router'
 import { useSessionStore } from '@/stores/SessionStore'
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 const route = useRoute()
 const sessionStore = useSessionStore()
+const { playersWithAvatar, events } = storeToRefs(sessionStore)
 
-// Reaktywne dane z Pinia
 const session = computed(() => sessionStore.session)
 const isLoading = computed(() => sessionStore.isLoading)
 
-// --- MOCK DANE DO WIZUALIZACJI (zastąp logiką backendową w przyszłości) ---
+const avatarByUserId = computed<Record<number, string>>(() => {
+  const map: Record<number, string> = {}
+
+  playersWithAvatar.value.forEach((player) => {
+    map[player.id] = player.resolvedAvatar
+  })
+
+  return map
+})
+
 const newPlayerId = ref('')
 const chatInput = ref('')
 const chatContainer = ref<HTMLElement | null>(null)
+const showDicePanel = ref(false)
 
-// Przykładowe logi/wiadomości w czacie
-const chatLogs = ref([
-  { id: 1, type: 'system', content: 'Sesja została rozpoczęta.', time: '20:00' },
+//  kafelki akcji
+const diceTypes = ['d6', 'd8', 'd12', 'd20']
+
+const actions = [
+  {
+    id: 1,
+    name: 'Rzut Kością',
+    color: 'text-yellow-400',
+    icon: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#facd0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8" cy="8" r="1" fill="#facd0a"></circle>
+        <circle cx="16" cy="16" r="1" fill="#facd0a"></circle>
+        <circle cx="16" cy="8" r="1" fill="#facd0a"></circle>
+        <circle cx="8" cy="16" r="1" fill="#facd0a"></circle>
+        <circle cx="12" cy="12" r="1" fill="#facd0a"></circle>
+      </svg>`,
+  },
   {
     id: 2,
-    type: 'user',
-    author: 'Mistrz Gry',
-    content: 'Witacie w mrocznych lochach. Przed wami rozciąga się długi korytarz.',
-    time: '20:05',
+    name: 'Test Umiejętności',
+    color: 'text-blue-400',
+    icon: `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>`,
   },
-  {
-    id: 3,
-    type: 'roll',
-    author: 'System',
-    content: 'Geralt rzucił na percepcję: 18 (Sukces)',
-    time: '20:06',
-  },
-  {
-    id: 4,
-    type: 'user',
-    author: 'Geralt',
-    content: 'Czy widzę jakieś pułapki na podłodze?',
-    time: '20:07',
-  },
-])
-
-// Przykładowe kafelki akcji
-const actions = [
-  { id: 1, name: 'Rzut Kością', icon: 'd20', color: 'text-emerald-400' },
-  { id: 2, name: 'Test Umiejętności', icon: 'skill', color: 'text-blue-400' },
-  { id: 3, name: 'Inicjatywa', icon: 'flash', color: 'text-yellow-400' },
-  { id: 4, name: 'Odpoczynek', icon: 'moon', color: 'text-slate-400' },
 ]
 // --------------------------------------------------------------------------
 
 onMounted(async () => {
-  await sessionStore.fetchSessionById(Number(route.params.id))
+  const sessionId = Number(route.params.id)
+  if (sessionId) {
+    await sessionStore.fetchSessionById(sessionId)
+  }
+  await sessionStore.fetchEvents(sessionId) // Pobierz historię
+  await sessionStore.initSignalR(sessionId)
   scrollToBottom()
 })
 
@@ -59,7 +74,15 @@ onBeforeUnmount(() => {
   sessionStore.clearSession()
 })
 
-// Automatyczne przewijanie czatu w dół
+const currentSessionId = () => sessionStore.session?.id
+
+watch(
+  () => events.value.length,
+  () => {
+    scrollToBottom()
+  },
+)
+
 const scrollToBottom = () => {
   nextTick(() => {
     if (chatContainer.value) {
@@ -68,36 +91,63 @@ const scrollToBottom = () => {
   })
 }
 
+const getAvatarForEvent = (userId: number) => {
+  return avatarByUserId.value[userId] || resolveAvatarUrl(null, '?')
+}
+
 // Funkcja obsługi dodawania gracza (mock)
-const handleAddPlayer = () => {
-  if (!newPlayerId.value) return
-  alert(`Tu wyślesz request API dodający gracza o ID: ${newPlayerId.value}`)
+const handleAddPlayer = async () => {
+  if (!newPlayerId.value || !sessionStore.session) return
+
+  const sessionId = sessionStore.session.id
+  const playerId = Number(newPlayerId.value)
+
+  if (Number.isNaN(playerId)) return
+
+  await sessionStore.addPlayer(sessionId, playerId)
+  await sessionStore.fetchSessionPlayersDetails()
+
   newPlayerId.value = ''
 }
 
-// Funkcja obsługi wysyłania wiadomości (mock)
-const handleSendMessage = () => {
+const handleSendMessage = async () => {
   if (!chatInput.value.trim()) return
-  chatLogs.value.push({
-    id: Date.now(),
-    type: 'user',
-    author: 'Ty',
-    content: chatInput.value,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  })
+
+  const payload: ChatMessagePayload = {
+    message: chatInput.value,
+  }
+
+  await sessionStore.sendEvent('ChatMessage', payload)
   chatInput.value = ''
-  scrollToBottom()
 }
 
-// Funkcja obsługi akcji (mock)
-const triggerAction = (actionName: string) => {
-  chatLogs.value.push({
-    id: Date.now(),
-    type: 'system',
-    content: `Aktywowano akcję: ${actionName}`,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  })
-  scrollToBottom()
+const rollDice = (dice: string) => {
+  const max = Number(dice.replace('d', ''))
+  return Math.floor(Math.random() * max) + 1
+}
+
+const triggerDiceRoll = async (dice: string) => {
+  const result = rollDice(dice)
+
+  const payload: DiceRollPayload = {
+    dice: `1${dice}`,
+    result,
+  }
+
+  await sessionStore.sendEvent('DiceRoll', payload)
+  showDicePanel.value = false
+}
+
+const triggerAction = async (actionName: string) => {
+  if (actionName === 'Rzut Kością') {
+    showDicePanel.value = !showDicePanel.value
+    return
+  }
+
+  // tu zostają inne akcje
+  if (actionName === 'Test Umiejętności') {
+    // ... cokolwiek tu kiedyś dodasz
+  }
 }
 
 // Helper do inicjałów avatara
@@ -164,17 +214,41 @@ const getInitials = (name: string) => name.charAt(0).toUpperCase()
             ref="chatContainer"
             class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent"
           >
-            <div v-for="log in chatLogs" :key="log.id" class="animate-fade-in-up">
-              <div v-if="log.type === 'system'" class="flex justify-center my-4">
-                <span
-                  class="text-xs font-mono text-slate-500 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-800"
-                >
-                  {{ log.content }}
-                </span>
+            <div v-for="log in events" :key="log.id" class="animate-fade-in-up">
+              <div v-if="log.type === 'ChatMessage'" class="flex gap-4">
+                <img
+                  :src="getAvatarForEvent(log.userId)"
+                  class="flex-shrink-0 w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-emerald-400"
+                />
+                <div class="flex-1">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-sm font-bold text-emerald-400">{{ log.userName }}</span>
+                    <span class="text-xs text-slate-600">{{
+                      log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }}</span>
+                  </div>
+                  <p class="text-slate-300 text-sm">{{ log.data.message }}</p>
+                </div>
+              </div>
+
+              <div v-else-if="log.type === 'UserJoined'" class="flex justify-center w-full">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-bold text-slate-600">
+                    {{ log.userName }} dołączył do sesji
+                  </span>
+                </div>
+              </div>
+
+              <div v-else-if="log.type === 'UserLeft'" class="flex justify-center w-full">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-xs font-bold text-slate-600">
+                    {{ log.userName }} opóścił sesję
+                  </span>
+                </div>
               </div>
 
               <div
-                v-else-if="log.type === 'roll'"
+                v-else-if="log.type === 'DiceRoll'"
                 class="flex gap-3 bg-slate-800/30 p-3 rounded-lg border-l-2 border-yellow-500/50"
               >
                 <div class="text-yellow-500 mt-1">
@@ -190,25 +264,24 @@ const getInitials = (name: string) => name.charAt(0).toUpperCase()
                   </svg>
                 </div>
                 <div>
-                  <span class="block text-xs font-bold text-yellow-500 mb-0.5">{{
-                    log.author
-                  }}</span>
-                  <p class="text-sm text-slate-300">{{ log.content }}</p>
+                  <span class="block text-xs font-bold text-yellow-500"
+                    >{{ log.userName }} rzuca {{ log.data.dice }}</span
+                  >
+                  <p class="text-lg font-bold text-slate-100">{{ log.data.result }}</p>
                 </div>
               </div>
 
               <div v-else class="flex gap-4 group">
-                <div
-                  class="flex-shrink-0 w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-emerald-400 border border-slate-700"
-                >
-                  {{ log.author ? getInitials(log.author) : '?' }}
-                </div>
+                <img
+                  :src="getAvatarForEvent(log.userId)"
+                  class="flex-shrink-0 w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-xs font-bold text-emerald-400"
+                />
                 <div class="flex-1">
                   <div class="flex items-baseline gap-2 mb-1">
-                    <span class="text-sm font-bold text-emerald-400">{{ log.author }}</span>
-                    <span class="text-xs text-slate-600">{{ log.time }}</span>
+                    <span class="text-sm font-bold text-emerald-400">{{ log.userName }}</span>
+                    <span class="text-xs text-slate-600">{{ log.type }}</span>
                   </div>
-                  <p class="text-slate-300 text-sm leading-relaxed">{{ log.content }}</p>
+                  <p class="text-slate-300 text-sm leading-relaxed">{{ log.data }}</p>
                 </div>
               </div>
             </div>
@@ -271,68 +344,25 @@ const getInitials = (name: string) => name.charAt(0).toUpperCase()
                 @click="triggerAction(action.name)"
                 class="group flex flex-col items-center justify-center p-4 bg-slate-950 border border-slate-800 rounded-xl hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all duration-300"
               >
-                <div class="mb-2 transition-transform group-hover:scale-110" :class="action.color">
-                  <svg
-                    v-if="action.icon === 'd20'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                  </svg>
-                  <svg
-                    v-if="action.icon === 'skill'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                  <svg
-                    v-if="action.icon === 'flash'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                  <svg
-                    v-if="action.icon === 'moon'"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                    />
-                  </svg>
-                </div>
+                <span v-html="action.icon"></span>
+
                 <span
                   class="text-xs font-medium text-slate-400 group-hover:text-emerald-400 transition-colors"
-                  >{{ action.name }}</span
                 >
+                  {{ action.name }}
+                </span>
+              </button>
+            </div>
+
+            <!-- PANEL WYBORU KOŚCI -->
+            <div v-if="showDicePanel" class="mt-4 grid grid-cols-4 gap-3">
+              <button
+                v-for="dice in diceTypes"
+                :key="dice"
+                @click="triggerDiceRoll(dice)"
+                class="p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-yellow-400/50 hover:bg-yellow-400/10 transition"
+              >
+                <span class="text-yellow-400 font-bold">{{ dice }}</span>
               </button>
             </div>
           </section>
@@ -357,31 +387,28 @@ const getInitials = (name: string) => name.charAt(0).toUpperCase()
                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                 />
               </svg>
-              Uczestnicy ({{ session.players.length }})
+              Użytkownicy ({{ playersWithAvatar.length }})
             </h3>
 
             <div
               class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1 scrollbar-thin scrollbar-thumb-slate-700"
             >
               <div
-                v-for="player in session.players"
-                :key="player.playerId"
+                v-for="player in playersWithAvatar"
+                :key="player.id"
                 class="flex items-center justify-between p-2 rounded-lg bg-slate-900/50 hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-700"
               >
                 <div class="flex items-center gap-3">
-                  <div
-                    class="w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-xs font-bold text-blue-400"
-                  >
-                    {{ getInitials(player.playerName) }}
-                  </div>
+                  <img
+                    :src="player.resolvedAvatar"
+                    class="w-8 h-8 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center"
+                  />
+
                   <div>
-                    <p class="text-sm font-medium text-slate-200">{{ player.playerName }}</p>
-                    <p class="text-[10px] text-slate-500 font-mono">ID: {{ player.playerId }}</p>
+                    <p class="text-sm font-medium text-slate-200">{{ player.userName }}</p>
+                    <p class="text-[10px] text-slate-500 font-mono">ID: {{ player.id }}</p>
                   </div>
                 </div>
-                <div
-                  class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"
-                ></div>
               </div>
 
               <div

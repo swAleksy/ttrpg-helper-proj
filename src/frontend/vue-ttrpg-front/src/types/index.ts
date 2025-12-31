@@ -56,7 +56,7 @@ export interface MessageDto {
   isRead: boolean
 }
 
-// ============== Campaign ==============
+// ============== Campaign / Session ==============
 
 export interface PlayerDto {
   playerId: number
@@ -79,4 +79,73 @@ export interface GameCampaignDto {
   gameMasterId: number
   gameMasterName: string
   sessions: SessionDto[]
+}
+
+// ============== SESSION EVENTS ===============
+// ---  Payloads---
+
+export interface ChatMessagePayload {
+  message: string
+}
+
+export interface DiceRollPayload {
+  dice: string // np. "d20"
+  result: number // np. 14
+}
+
+// export interface SkillCheckPayload {
+//   skillName: string // np. "Percepcja"
+//   difficultyClass: number // DC
+//   rollResult: number
+//   success: boolean
+// }
+
+export interface ShareNpcPayload {
+  userId: number
+}
+
+export interface ShareItemPayload {
+  itemId: number
+  itemName: string
+  // ... whatever properties you serialize in C#
+}
+
+export interface UserLifecyclePayload {
+  userId: number
+  userName: string
+}
+
+// --- enum ---
+export type SessionEventDomain =
+  | { type: 'ChatMessage'; data: ChatMessagePayload }
+  | { type: 'DiceRoll'; data: DiceRollPayload }
+  | { type: 'ShareItem'; data: ShareItemPayload }
+  | { type: 'ShareNpc'; data: ShareNpcPayload }
+  | { type: 'UserJoined'; data: UserLifecyclePayload }
+  | { type: 'UserLeft'; data: UserLifecyclePayload }
+  | { type: 'Unknown'; data: unknown }
+
+// --- 3. Wspólne pola dla każdego eventu ---
+export type SessionEventModel = SessionEventDomain & {
+  id: number
+  sessionId: number
+  userId: number
+  userName: string
+  timestamp: Date // Tutaj już chcemy mieć obiekt Date, nie string
+}
+
+export interface GetSessionEventDto {
+  id: number
+  sessionId: number
+  type: string // Tu jest jeszcze zwykły string
+  dataJson: string // Tu jest zserializowany JSON
+  timestamp: string // Data w formacie ISO z C#
+  userId: number
+  userName: string
+}
+
+export interface CreateSessionEventDto {
+  sessionId: number
+  type: string
+  dataJson: string
 }
