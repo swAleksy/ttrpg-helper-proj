@@ -18,7 +18,7 @@ public class CompendiumRuleController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetRule(int id)
+    public async Task<ActionResult<GetRuleDto>> GetRule(int id)
     {
         var rule = await _ruleService.GetRule(id);
         if (rule == null) return NotFound("Rule not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumRuleController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRules()
+    public async Task<ActionResult<IEnumerable<GetRuleDto>>> GetRules()
     {
         var rules = await _ruleService.GetRules();
         

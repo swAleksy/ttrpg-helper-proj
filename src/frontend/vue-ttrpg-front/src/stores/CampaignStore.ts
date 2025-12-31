@@ -183,26 +183,5 @@ export const useCampaignStore = defineStore('campaign', {
         return false
       }
     },
-
-    // async fetchSessions(int) {
-    //   if ()
-    //   const authStore = useAuthStore()
-    //   const playerId = authStore.user?.id
-    //   console.log(`Fetching campaigns for player ID: ${playerId}`)
-    //   if (!playerId) {
-    //     console.warn('Cannot fetch campaigns: User is not logged in or ID is missing.')
-    //     return
-    //   }
-
-    //   this.isLoading = true
-    //   try {
-    //     const response = await axios.get(`${API_URL}/api/session/player​`)
-    //     this.sessions = response.data
-    //   } catch (error) {
-    //     console.error('Failed to fetch sessions:', error)
-    //   } finally {
-    //     this.isLoading = false
-    //   }
-    // },
   },
 })

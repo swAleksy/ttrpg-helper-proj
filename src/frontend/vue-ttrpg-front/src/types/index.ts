@@ -149,3 +149,44 @@ export interface CreateSessionEventDto {
   type: string
   dataJson: string
 }
+
+export interface NoteDto {
+  id: number
+  campaignId: number
+  name: string
+  contentMarkdown: string
+}
+
+export interface ItemDto {
+  id: number
+  campaignId: number | null
+  name: string
+  description: string
+  type: string
+  value: number
+}
+
+export interface NpcSkillDto {
+  id: number
+  npcId: number
+  name: string
+  description: string
+  value: number
+}
+
+export interface NpcDto {
+  id: number
+  campaignId: number | null
+  name: string
+  description: string
+  race: string
+  class: string
+  level: number
+  strength: number
+  dexterity: number
+  constitution: number
+  intelligence: number
+  wisdom: number
+  charisma: number
+  skills: NpcSkillDto[]
+}

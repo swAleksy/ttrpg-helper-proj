@@ -18,7 +18,7 @@ public class CompendiumBackgroundController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetBackground(int id)
+    public async Task<ActionResult<GetBackgroundDto>> GetBackground(int id)
     {
         var background = await _backgroundService.GetBackground(id);
         if (background == null) return NotFound("Background not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumBackgroundController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetBackgrounds()
+    public async Task<ActionResult<IEnumerable<GetBackgroundDto>>> GetBackgrounds()
     {
         var backgrounds = await _backgroundService.GetBackgrounds();
         
@@ -36,7 +36,7 @@ public class CompendiumBackgroundController : ControllerBase
 
     [HttpPost("create")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> CreateBackground([FromBody] CreateBackgroundDto dto)
+    public async Task<ActionResult<CreateBackgroundDto>> CreateBackground([FromBody] CreateBackgroundDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         

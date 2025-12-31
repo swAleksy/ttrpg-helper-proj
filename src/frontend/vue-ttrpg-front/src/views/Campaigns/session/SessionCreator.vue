@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue' // dodano computed
+import { ref } from 'vue' // dodano computed
 import { useRouter, useRoute } from 'vue-router' // dodano useRoute
 import { useCampaignStore } from '@/stores/CampaignStore'
 

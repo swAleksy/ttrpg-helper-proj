@@ -36,7 +36,7 @@ const formatDate = (dateString: string) => {
 
 // 4. Akcje
 const openSession = (sessionId: number) => {
-  router.push(`/session/${sessionId}`)
+  router.push(`/campaigns/${Number(props.id)}/session/${sessionId}`)
 }
 
 const handleCreateSession = () => {

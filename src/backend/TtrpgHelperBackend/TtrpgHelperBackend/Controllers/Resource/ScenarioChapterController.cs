@@ -23,7 +23,7 @@ public class ScenarioChapterController : ControllerBase
     // ======================
     // -- SCENARIO CHAPTER --
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetScenarioChapter(int id)
+    public async Task<ActionResult<GetScenarioChapterDto>> GetScenarioChapter(int id)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
@@ -35,7 +35,7 @@ public class ScenarioChapterController : ControllerBase
     }
 
     [HttpGet("scenario/{scenarioId}")]
-    public async Task<IActionResult> GetScenario(int scenarioId)
+    public async Task<ActionResult<IEnumerable<GetScenarioChapterDto>>> GetScenario(int scenarioId)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");

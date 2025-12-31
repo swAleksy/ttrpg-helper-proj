@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { onMounted, onBeforeUnmount, computed, ref, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import type { ChatMessagePayload, DiceRollPayload } from '@/types'
 import { useRoute } from 'vue-router'
 import { useSessionStore } from '@/stores/SessionStore'
@@ -8,10 +8,11 @@ import { resolveAvatarUrl } from '@/utils/avatar'
 
 const route = useRoute()
 const sessionStore = useSessionStore()
-const { playersWithAvatar, events } = storeToRefs(sessionStore)
+const { playersWithAvatar, events, notes, items, npcs } = storeToRefs(sessionStore)
 
 const session = computed(() => sessionStore.session)
 const isLoading = computed(() => sessionStore.isLoading)
+const campaignId = computed(() => Number(route.params.campaignId))
 
 const avatarByUserId = computed<Record<number, string>>(() => {
   const map: Record<number, string> = {}
@@ -58,12 +59,14 @@ const actions = [
       </svg>`,
   },
 ]
-// --------------------------------------------------------------------------
+
+const activeTab = ref<'notes' | 'items' | 'npcs'>('notes')
 
 onMounted(async () => {
   const sessionId = Number(route.params.id)
   if (sessionId) {
     await sessionStore.fetchSessionById(sessionId)
+    await sessionStore.fetchCampaignData(campaignId.value)
   }
   await sessionStore.fetchEvents(sessionId) // Pobierz historię
   await sessionStore.initSignalR(sessionId)
@@ -149,9 +152,6 @@ const triggerAction = async (actionName: string) => {
     // ... cokolwiek tu kiedyś dodasz
   }
 }
-
-// Helper do inicjałów avatara
-const getInitials = (name: string) => name.charAt(0).toUpperCase()
 </script>
 
 <template>
@@ -454,10 +454,126 @@ const getInitials = (name: string) => name.charAt(0).toUpperCase()
           </section>
         </div>
       </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3h-[calc(100vh-400px)]"></div>
+
+      <div
+        class="bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl mt-6"
+      >
+        <div class="flex border-b border-slate-800">
+          <button
+            @click="activeTab = 'notes'"
+            :class="[
+              'px-6 py-3 text-sm font-medium transition-colors',
+              activeTab === 'notes'
+                ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/30',
+            ]"
+          >
+            Notatki
+          </button>
+          <button
+            @click="activeTab = 'items'"
+            :class="[
+              'px-6 py-3 text-sm font-medium transition-colors',
+              activeTab === 'items'
+                ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/30',
+            ]"
+          >
+            Przedmioty
+          </button>
+          <button
+            @click="activeTab = 'npcs'"
+            :class="[
+              'px-6 py-3 text-sm font-medium transition-colors',
+              activeTab === 'npcs'
+                ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/30',
+            ]"
+          >
+            NPC
+          </button>
+        </div>
+
+        <div class="p-6 h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700">
+          <div v-if="activeTab === 'notes'" class="space-y-4">
+            <div v-if="notes.length === 0" class="text-slate-500 text-center py-8">
+              Brak notatek w tej kampanii.
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                v-for="note in notes"
+                :key="note.id"
+                class="bg-slate-950 p-4 rounded-xl border border-slate-800"
+              >
+                <h4 class="font-bold text-emerald-400 mb-2">{{ note.name }}</h4>
+                <p class="text-slate-300 text-sm whitespace-pre-wrap">{{ note.contentMarkdown }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="activeTab === 'items'">
+            <div v-if="items.length === 0" class="text-slate-500 text-center py-8">
+              Brak przedmiotów.
+            </div>
+            <table v-else class="w-full text-left text-sm text-slate-300">
+              <thead class="text-xs uppercase bg-slate-950 text-slate-500 sticky top-0">
+                <tr>
+                  <th class="px-4 py-3 rounded-tl-lg">Nazwa</th>
+                  <th class="px-4 py-3">Typ</th>
+                  <th class="px-4 py-3 rounded-tr-lg">Opis</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                <tr
+                  v-for="item in items"
+                  :key="item.id"
+                  class="hover:bg-slate-800/50 transition-colors"
+                >
+                  <td class="px-4 py-3 font-medium text-slate-100">{{ item.name }}</td>
+                  <td class="px-4 py-3 text-yellow-500">{{ item.type }}</td>
+                  <td class="px-4 py-3 text-slate-400">{{ item.description }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div v-if="activeTab === 'npcs'">
+            <div v-if="npcs.length === 0" class="text-slate-500 text-center py-8">Brak NPC.</div>
+            <table v-else class="w-full text-left text-sm text-slate-300">
+              <thead class="text-xs uppercase bg-slate-950 text-slate-500 sticky top-0">
+                <tr>
+                  <th class="px-4 py-3 rounded-tl-lg">Imie</th>
+                  <th class="px-4 py-3">Rasa</th>
+                  <th class="px-4 py-3">Klasa</th>
+                  <th class="px-4 py-3 rounded-tr-lg">Opis</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800">
+                <tr
+                  v-for="npc in npcs"
+                  :key="npc.id"
+                  class="hover:bg-slate-800/50 transition-colors group"
+                >
+                  <td class="px-4 py-3 font-medium text-slate-100">{{ npc.name }}</td>
+                  <td class="px-4 py-3 text-blue-400">{{ npc.race }}</td>
+                  <td class="px-4 py-3 text-purple-400">{{ npc.class }} (Lvl {{ npc.level }})</td>
+                  <td class="px-4 py-3 text-slate-400">
+                    {{ npc.description }}
+                    <div
+                      class="hidden group-hover:block absolute bg-slate-900 border border-slate-700 p-2 rounded shadow-xl mt-1 z-10 text-xs"
+                    >
+                      STR: {{ npc.strength }} | DEX: {{ npc.dexterity }} | INT:
+                      {{ npc.intelligence }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Opcjonalnie: animacja pojawiania się wiadomości */
-</style>

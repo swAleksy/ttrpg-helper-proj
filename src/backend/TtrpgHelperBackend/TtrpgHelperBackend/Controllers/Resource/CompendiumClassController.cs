@@ -18,7 +18,7 @@ public class CompendiumClassController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetClass(int id)
+    public async Task<ActionResult<GetClassDto>> GetClass(int id)
     {
         var cls = await _classService.GetClass(id);
         if (cls == null) return NotFound("Class not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumClassController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetClasss()
+    public async Task<ActionResult<IEnumerable<GetClassDto>>> GetClasses()
     {
         var classes = await _classService.GetClasses();
         

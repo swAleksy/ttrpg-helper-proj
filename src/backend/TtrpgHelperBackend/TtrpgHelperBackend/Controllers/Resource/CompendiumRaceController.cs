@@ -18,7 +18,7 @@ public class CompendiumRaceController : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetRace(int id)
+    public async Task<ActionResult<GetRaceDto>> GetRace(int id)
     {
         var race = await _raceService.GetRace(id);
         if (race == null) return NotFound("Race not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumRaceController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetRaces()
+    public async Task<ActionResult<IEnumerable<GetRaceDto>>> GetRaces()
     {
         var races = await _raceService.GetRaces();
         

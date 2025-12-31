@@ -18,7 +18,7 @@ public class CompendiumLocationController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetLocation(int id)
+    public async Task<ActionResult<GetScenarioLocationDto>> GetLocation(int id)
     {
         var location = await _locationService.GetCompendiumLocation(id);
         if (location == null) return NotFound("Location not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumLocationController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetLocations()
+    public async Task<ActionResult<IEnumerable<GetScenarioLocationDto>>> GetLocations()
     {
         var locations = await _locationService.GetCompendiumLocations();
         

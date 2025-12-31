@@ -12,6 +12,9 @@ import type {
   DiceRollPayload,
   UserLifecyclePayload,
   CreateSessionEventDto,
+  NoteDto,
+  ItemDto,
+  NpcDto,
 } from '@/types'
 import { resolveAvatarUrl } from '@/utils/avatar'
 
@@ -22,6 +25,9 @@ export const useSessionStore = defineStore('session', {
     isLoading: false,
     events: [] as SessionEventModel[],
     hubConnection: null as HubConnection | null,
+    notes: [] as NoteDto[],
+    items: [] as ItemDto[],
+    npcs: [] as NpcDto[],
   }),
 
   getters: {
@@ -70,6 +76,54 @@ export const useSessionStore = defineStore('session', {
         this.players = responses.map((res) => res.data)
       } catch (error) {
         console.error('Failed to fetch player details', error)
+      }
+    },
+
+    async fetchCampaignData(campaignId: number) {
+      console.log(`id wysłane do sesji${campaignId}`)
+      if (!this.session) {
+        console.log(`this.session: ${this.session}`)
+        console.warn('Brak campaignId w sesji 1 - nie można pobrać danych kampanii.')
+        return
+      }
+      if (!campaignId) {
+        console.log(`campaignId ======= : ${campaignId}`)
+        console.warn('Brak campaignId w sesji 2 - nie można pobrać danych kampanii.')
+        return
+      }
+
+      // Wywołujemy równolegle dla wydajności
+      await Promise.all([
+        this.fetchNotes(campaignId),
+        this.fetchItems(campaignId),
+        this.fetchNpcs(campaignId),
+      ])
+    },
+
+    async fetchNotes(campaignId: number) {
+      try {
+        const response = await axios.get<NoteDto[]>(`${API_URL}/api/note/campaign/${campaignId}`)
+        this.notes = response.data
+      } catch (error) {
+        console.error('Failed to fetch notes', error)
+      }
+    },
+
+    async fetchItems(campaignId: number) {
+      try {
+        const response = await axios.get<ItemDto[]>(`${API_URL}/api/item/campaign/${campaignId}`)
+        this.items = response.data
+      } catch (error) {
+        console.error('Failed to fetch items', error)
+      }
+    },
+
+    async fetchNpcs(campaignId: number) {
+      try {
+        const response = await axios.get<NpcDto[]>(`${API_URL}/api/npc/campaign/${campaignId}`)
+        this.npcs = response.data
+      } catch (error) {
+        console.error('Failed to fetch npcs', error)
       }
     },
 

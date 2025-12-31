@@ -21,7 +21,7 @@ public class NoteController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetNote(int id)
+    public async Task<ActionResult<GetScenarioNoteDto>> GetNote(int id)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
@@ -33,7 +33,7 @@ public class NoteController : ControllerBase
     }
 
     [HttpGet("campaign/{campaignId}")]
-    public async Task<IActionResult> GetNotes(int campaignId)
+    public async Task<ActionResult<IEnumerable<GetScenarioNoteDto>>> GetNotes(int campaignId)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");

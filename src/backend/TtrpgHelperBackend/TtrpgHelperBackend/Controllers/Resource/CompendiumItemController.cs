@@ -18,7 +18,7 @@ public class CompendiumItemController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetItem(int id)
+    public async Task<ActionResult<GetScenarioItemDto>> GetItem(int id)
     {
         var item = await _itemService.GetCompendiumItem(id);
         if (item == null) return NotFound("Item not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumItemController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetItems()
+    public async Task<ActionResult<IEnumerable<GetScenarioItemDto>>> GetItems()
     {
         var items = await _itemService.GetCompendiumItems();
         

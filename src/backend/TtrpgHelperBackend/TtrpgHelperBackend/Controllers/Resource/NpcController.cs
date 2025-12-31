@@ -23,7 +23,7 @@ public class NpcController : ControllerBase
     // =========
     // -- NPC --
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetNpc(int id)
+    public async Task<ActionResult<GetScenarioNpcDto>> GetNpc(int id)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
@@ -35,7 +35,7 @@ public class NpcController : ControllerBase
     }
 
     [HttpGet("campaign/{campaignId}")]
-    public async Task<IActionResult> GetNpcs(int campaignId)
+    public async Task<ActionResult<IEnumerable<GetScenarioNpcDto>>> GetNpcs(int campaignId)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");

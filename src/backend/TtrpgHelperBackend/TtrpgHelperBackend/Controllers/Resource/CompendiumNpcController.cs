@@ -18,7 +18,7 @@ public class CompendiumNpcController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetNpc(int id)
+    public async Task<ActionResult<GetScenarioNpcDto>> GetNpc(int id)
     {
         var npc = await _npcService.GetCompendiumNpc(id);
         if (npc == null) return NotFound("NPC not found in compendium.");
@@ -27,7 +27,7 @@ public class CompendiumNpcController : ControllerBase
     }
     
     [HttpGet]
-    public async Task<IActionResult> GetNpcs()
+    public async Task<ActionResult<IEnumerable<GetScenarioNpcDto>>> GetNpcs()
     {
         var npcs = await _npcService.GetCompendiumNpcs();
         

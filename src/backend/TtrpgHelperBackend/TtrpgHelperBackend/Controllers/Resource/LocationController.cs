@@ -19,9 +19,9 @@ public class LocationController : ControllerBase
         _locationService = locationService;
         _userHelper = userHelper;
     }
-    
+
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetLocation(int id)
+    public async Task<ActionResult<GetScenarioLocationDto>> GetLocation(int id)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
@@ -33,7 +33,7 @@ public class LocationController : ControllerBase
     }
 
     [HttpGet("campaign/{campaignId}")]
-    public async Task<IActionResult> GetLocations(int campaignId)
+    public async Task<ActionResult<IEnumerable<GetScenarioLocationDto>>> GetLocations(int campaignId)
     {
         var gameMasterId = _userHelper.GetUserId();
         if (gameMasterId == null) return Unauthorized("User ID not found in token.");
