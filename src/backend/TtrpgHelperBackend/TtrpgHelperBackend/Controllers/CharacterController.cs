@@ -33,6 +33,7 @@ public class CharacterController : ControllerBase
         var newCharacter = await _characterService.CreateCharacter(userId.Value, request);
         var readDto = new CharacterDto()
         {
+            Id = newCharacter.Id,
             Name = newCharacter.Name,
             RaceId = newCharacter.RaceId,
             ClassId = newCharacter.ClassId,
@@ -66,6 +67,7 @@ public class CharacterController : ControllerBase
 
         var charactersResponse = characters.Select(c => new CharacterDto()
         {
+            Id = c.Id,
             Name = c.Name,
             RaceId = c.RaceId,
             ClassId = c.ClassId,

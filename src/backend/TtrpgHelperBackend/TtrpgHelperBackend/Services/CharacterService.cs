@@ -67,6 +67,7 @@ public class CharacterService : ICharacterService
         if (character == null)
             return null;
         
+        character.Id = request.Id;
         character.Name = request.Name;
         character.RaceId = request.RaceId;
         character.ClassId = request.ClassId;
