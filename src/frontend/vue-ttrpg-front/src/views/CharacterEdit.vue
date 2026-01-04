@@ -2,15 +2,16 @@
   <div class="min-h-screen bg-slate-950 text-slate-100">
     <div class="mx-auto max-w-6xl px-4 py-8 space-y-8">
       <!-- Nagłówek -->
-      <header class="flex items-center justify-between">
+      <header class="flex items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight">
-            Nowa postać
+            Edytuj postać
           </h1>
           <p class="mt-1 text-sm text-slate-400">
-            Uzupełnij informacje o swojej postaci.
+            Zmień dane postaci i zapisz zmiany.
           </p>
         </div>
+
         <button
           type="button"
           class="rounded-xl border border-slate-600 px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
@@ -20,8 +21,11 @@
         </button>
       </header>
 
-      <!-- Układ formularza -->
-      <div class="space-y-6">
+      <div v-if="loading" class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-slate-300">
+        Ładowanie danych postaci…
+      </div>
+
+      <div v-else class="space-y-6">
         <!-- 1) Podstawowe informacje + Rasa obok siebie na szerokich -->
         <div class="grid gap-6 lg:grid-cols-2">
           <!-- Sekcja: podstawowe informacje -->
@@ -29,7 +33,7 @@
             <h2 class="text-lg font-semibold">
               Podstawowe informacje
             </h2>
-            
+
             <div class="lg:flex-1 lg:flex lg:flex-col lg:justify-center">
               <div class="w-full flex flex-row gap-6 items-end lg:flex-col lg:items-stretch">
                 <!-- Avatar -->
@@ -216,7 +220,6 @@
           </div>
         </section>
 
-
         <!-- 4) Tło -->
         <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
           <h2 class="text-lg font-semibold">
@@ -262,7 +265,7 @@
             </div>
           </div>
 
-          <!-- INFO: co jest potrzebne -->
+          <!-- INFO co jest potrzebne -->
           <div class="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-xs text-slate-300">
             <div v-if="!selectedBackgroundId || !selectedClassId" class="text-slate-400">
               Wybierz <span class="text-slate-200">tło</span> i <span class="text-slate-200">klasę</span>, aby odblokować wybór biegłości.
@@ -379,28 +382,25 @@
             </p>
           </div>
         </section>
+
+        <!-- Przycisk zapisu na dole strony -->
+        <div class="mt-8 flex justify-end">
+          <button
+            type="button"
+            :disabled="submitting"
+            class="bg-emerald-500/90 border-emerald-400 text-slate-950 hover:bg-emerald-400
+                  px-10 py-3 text-base md:text-lg font-semibold rounded-2xl shadow-lg shadow-emerald-500/20
+                  disabled:opacity-60 disabled:cursor-not-allowed"
+            @click="handleUpdate"
+          >
+            {{ submitting ? 'Zapisywanie…' : 'Zapisz zmiany' }}
+          </button>
+        </div>
+
+        <p v-if="submitError" class="mt-3 text-sm text-rose-300">
+          {{ submitError }}
+        </p>
       </div>
-
-
-
-      <!-- Przycisk zapisu na dole strony -->
-      <div class="mt-8 flex justify-end">
-        <button
-          type="button"
-          :disabled="submitting"
-          class="bg-emerald-500/90 border-emerald-400 text-slate-950 hover:bg-emerald-400
-                px-10 py-3 text-base md:text-lg font-semibold rounded-2xl shadow-lg shadow-emerald-500/20
-                disabled:opacity-60 disabled:cursor-not-allowed"
-          @click="handleSubmit"
-        >
-          {{ submitting ? 'Zapisywanie…' : 'Zapisz postać' }}
-        </button>
-      </div>
-    
-      <p v-if="submitError" class="mt-3 text-sm text-rose-300">
-        {{ submitError }}
-      </p>
-
 
       <!-- Modal szczegółów rasy -->
       <div
@@ -411,7 +411,6 @@
           class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-950/95 shadow-2xl"
           @click.stop
         >
-          <!-- nagłówek z X -->
           <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
             <h3 class="text-base font-semibold">
               Szczegóły rasy
@@ -425,7 +424,6 @@
             </button>
           </div>
 
-          <!-- treść -->
           <div class="px-4 py-4 space-y-2">
             <h4 class="text-lg font-semibold">
               {{ racePreview.name }}
@@ -436,7 +434,6 @@
             </p>
           </div>
 
-          <!-- przyciski na dole -->
           <div class="flex justify-end gap-3 border-t border-slate-800 px-4 py-3">
             <button
               type="button"
@@ -465,7 +462,6 @@
           class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-950/95 shadow-2xl"
           @click.stop
         >
-          <!-- nagłówek z X -->
           <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
             <h3 class="text-base font-semibold">
               Szczegóły klasy
@@ -479,9 +475,7 @@
             </button>
           </div>
 
-          <!-- treść -->
           <div class="flex gap-4 px-4 py-4">
-            <!-- obraz -->
             <div
               class="h-24 w-24 flex-shrink-0 rounded-xl bg-gradient-to-br from-emerald-700/80 to-slate-900 flex items-center justify-center text-xs text-slate-50"
             >
@@ -497,14 +491,13 @@
               <h4 class="text-lg font-semibold">
                 {{ classPreview.name }}
               </h4>
-              
+
               <p class="text-sm text-slate-200">
                 {{ classPreview.description }}
               </p>
             </div>
           </div>
 
-          <!-- przyciski na dole -->
           <div class="flex justify-end gap-3 border-t border-slate-800 px-4 py-3">
             <button
               type="button"
@@ -533,7 +526,6 @@
           class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-950/95 shadow-2xl"
           @click.stop
         >
-          <!-- nagłówek z X -->
           <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
             <h3 class="text-base font-semibold">
               Szczegóły tła
@@ -547,18 +539,16 @@
             </button>
           </div>
 
-          <!-- treść -->
           <div class="px-4 py-4 space-y-2">
             <h4 class="text-lg font-semibold">
               {{ backgroundPreview.name }}
             </h4>
-            
+
             <p class="text-sm text-slate-200">
               {{ backgroundPreview.description }}
             </p>
           </div>
 
-          <!-- przyciski na dole -->
           <div class="flex justify-end gap-3 border-t border-slate-800 px-4 py-3">
             <button
               type="button"
@@ -578,23 +568,26 @@
         </div>
       </div>
 
-
-
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 import defaultAvatar from '@/assets/img/DefaultCharacterAvatar.png'
-
 import { SKILL_ABILITY, BACKGROUND_SKILLS, CLASS_SKILLS, type SkillName } from "@/config/charactersSkillsConfig"
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8080'
 const router = useRouter()
+const route = useRoute()
+
+const characterId = computed(() => {
+  const id = Number(route.params.id)
+  return Number.isFinite(id) ? id : NaN
+})
 
 // usuwanie ewentualnego "/api" na końcu
 const BACKEND_ORIGIN = API_URL.replace(/\/api\/?$/, '')
@@ -614,44 +607,6 @@ const CLASS_AVATAR_MAP: Record<string, string> = {
   Wizard: 'wizard.png',
 }
 
-function getClassAvatarUrl(charClass: CharacterClass): string {
-  const fileName = CLASS_AVATAR_MAP[charClass.name]
-  if (!fileName) {
-    // gdyby brakowało mapowania –> użyj domyślnego avatara z frontu
-    return defaultAvatar
-  }
-  return `${BACKEND_ORIGIN}/characterAvatars/${fileName}`
-}
-
-// fallback, gdyby obraz się nie załadował
-function handleClassAvatarError(event: Event) {
-  const target = event.target as HTMLImageElement | null
-  if (target) {
-    target.src = defaultAvatar
-  }
-}
-
-const mainAvatarBroken = ref(false)
-
-const mainAvatarSrc = computed(() => {
-  // jeśli kiedyś obraz nie zadziałał, trzymaj fallback
-  if (mainAvatarBroken.value) return defaultAvatar
-
-  // jeśli nie wybrano klasy -> default
-  if (!selectedClassId.value) return defaultAvatar
-
-  const cls = classes.value.find(c => c.id === selectedClassId.value)
-  return cls ? getClassAvatarUrl(cls) : defaultAvatar
-})
-
-function handleMainAvatarError(event: Event) {
-  mainAvatarBroken.value = true
-  const target = event.target as HTMLImageElement | null
-  if (target) target.src = defaultAvatar
-}
-
-
-
 interface BaseEntity {
   id: number
   name: string
@@ -662,6 +617,51 @@ type Race = BaseEntity
 type CharacterClass = BaseEntity
 type Background = BaseEntity
 type Skill = BaseEntity
+
+// DTO z /allcharacters
+type CharacterFromList = {
+  id: number
+  name?: string | null
+  raceId?: number | null
+  classId?: number | null
+  backgroundId?: number | null
+  level?: number | null
+
+  strength?: number | null
+  dexterity?: number | null
+  constitution?: number | null
+  intelligence?: number | null
+  wisdom?: number | null
+  charisma?: number | null
+
+  characterSkillsIds?: number[] | null
+}
+
+function getClassAvatarUrl(charClass: CharacterClass): string {
+  const fileName = CLASS_AVATAR_MAP[charClass.name]
+  if (!fileName) return defaultAvatar
+  return `${BACKEND_ORIGIN}/characterAvatars/${fileName}`
+}
+
+function handleClassAvatarError(event: Event) {
+  const target = event.target as HTMLImageElement | null
+  if (target) target.src = defaultAvatar
+}
+
+const mainAvatarBroken = ref(false)
+
+const mainAvatarSrc = computed(() => {
+  if (mainAvatarBroken.value) return defaultAvatar
+  if (!selectedClassId.value) return defaultAvatar
+  const cls = classes.value.find(c => c.id === selectedClassId.value)
+  return cls ? getClassAvatarUrl(cls) : defaultAvatar
+})
+
+function handleMainAvatarError(event: Event) {
+  mainAvatarBroken.value = true
+  const target = event.target as HTMLImageElement | null
+  if (target) target.src = defaultAvatar
+}
 
 // --- state formularza ---
 const characterName = ref('')
@@ -679,7 +679,6 @@ const abilityStats = [
 
 const STANDARD_ARRAY = [15, 14, 13, 12, 10, 8] as const
 
-// tu trzymany wybór usera -> jaka wartość jest przypisana do jakiego atrybutu
 const abilityAssign = ref<Record<AbilityKey, number | null>>({
   STR: null,
   DEX: null,
@@ -711,13 +710,13 @@ function skillAbilityLabel(skillName: string) {
   return ability ?? "—"
 }
 
+const proficiencyBonus = computed(() => 2)
+
 function formatSkillBonus(skillName: string, proficient: boolean) {
   const ability = (SKILL_ABILITY as Record<string, AbilityKey | undefined>)[skillName]
   if (!ability) return "—"
-
   const score = abilityAssign.value[ability]
   if (score == null) return "—"
-
   const mod = abilityMod(score)
   const total = mod + (proficient ? proficiencyBonus.value : 0)
   return total >= 0 ? `+${total}` : `${total}`
@@ -727,7 +726,6 @@ function resetStandardArray() {
   abilityAssign.value = { STR: null, DEX: null, CON: null, INT: null, WIS: null, CHA: null }
 }
 
-
 const races = ref<Race[]>([])
 const classes = ref<CharacterClass[]>([])
 const backgrounds = ref<Background[]>([])
@@ -736,10 +734,6 @@ const skills = ref<Skill[]>([])
 const selectedRaceId = ref<number | null>(null)
 const selectedClassId = ref<number | null>(null)
 const selectedBackgroundId = ref<number | null>(null)
-
-// --- PROFI (biegłości w skillach) ---
-// lvl 1 na start
-const proficiencyBonus = computed(() => 2)
 
 // pomocniczo: nazwa wybranego tła/klasy
 const selectedBackgroundName = computed(() => {
@@ -768,7 +762,7 @@ const classRule = computed(() => {
 
 const classPickRequired = computed(() => classRule.value?.pick ?? 0)
 
-// mapowanie skillName -> skillId z backendu (po name!)
+// mapowanie skillName -> skillId z backendu (po name)
 const skillIdByName = computed(() => {
   const map = new Map<string, number>()
   for (const s of skills.value) map.set(s.name, s.id)
@@ -785,20 +779,19 @@ const backgroundSkillIds = computed<Set<number>>(() => {
   return set
 })
 
-// rozwinięcie A: obiekty Skill dla tła
 const backgroundSkillsResolved = computed<Skill[]>(() => {
   const ids = backgroundSkillIds.value
   return skills.value.filter(s => ids.has(s.id))
 })
 
-// B) lista opcji z klasy (po nazwach)
+// B) lista opcji z klasy
 const classOptionNames = computed<SkillName[]>(() => {
   const rule = classRule.value
   if (!rule) return []
   return rule.options as SkillName[]
 })
 
-// B) ids opcji z klasy (bez tych z tła, bo nie chcemy duplikatów)
+// B) ids opcji z klasy (bez tych z tła)
 const classOptionIds = computed<number[]>(() => {
   const bgIds = backgroundSkillIds.value
   const out: number[] = []
@@ -809,7 +802,6 @@ const classOptionIds = computed<number[]>(() => {
   return out
 })
 
-// B) obiekty Skill do renderu
 const classSkillsResolved = computed<Skill[]>(() => {
   const set = new Set(classOptionIds.value)
   return skills.value.filter(s => set.has(s.id))
@@ -818,12 +810,9 @@ const classSkillsResolved = computed<Skill[]>(() => {
 // wybory usera z klasy (ids)
 const classPickedIds = ref<Set<number>>(new Set())
 
-// reset wyborów przy zmianie klasy lub tła (żeby nie zostały stare zaznaczenia)
 function resetClassPicks() {
   classPickedIds.value = new Set()
 }
-
-// prosta reakcja bez watch: użyj w confirm...Selection
 
 const classPickRemaining = computed(() => {
   const need = classPickRequired.value
@@ -840,18 +829,16 @@ function isProficient(skillId: number) {
 }
 
 function isClassPickDisabled(skillId: number) {
-  // blokuj zaznaczanie, jeśli limit osiągnięty i skill nie jest już zaznaczony
   if (classPickedIds.value.has(skillId)) return false
   return classPickedIds.value.size >= classPickRequired.value
 }
 
 function toggleClassPick(skillId: number) {
-  if (isBackgroundGranted(skillId)) return // nie można wybrać tego co już daje tło
+  if (isBackgroundGranted(skillId)) return
   const set = new Set(classPickedIds.value)
 
-  if (set.has(skillId)) {
-    set.delete(skillId)
-  } else {
+  if (set.has(skillId)) set.delete(skillId)
+  else {
     if (set.size >= classPickRequired.value) return
     set.add(skillId)
   }
@@ -871,7 +858,7 @@ const proficientSkillIds = computed<number[]>(() => {
   return [...out]
 })
 
-// do rozwijania opisów
+// tylko do rozwijania opisów
 const expandedSkillIds = ref<Set<number>>(new Set())
 
 function toggleSkillDescription(id: number) {
@@ -881,13 +868,63 @@ function toggleSkillDescription(id: number) {
   expandedSkillIds.value = set
 }
 
+// --- submit / update ---
+const loading = ref(false)
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
 
-async function handleSubmit() {
+function normalizeSkillIdsFromCharacter(ch: CharacterFromList): number[] {
+  return Array.isArray(ch.characterSkillsIds)
+    ? ch.characterSkillsIds
+        .map(x => Number(x))
+        .filter(n => Number.isFinite(n))
+    : []
+}
+
+function prefillFromCharacter(ch: CharacterFromList) {
+  characterName.value = (ch.name ?? '') as string
+  selectedRaceId.value = (ch.raceId ?? null) as number | null
+  selectedClassId.value = (ch.classId ?? null) as number | null
+  selectedBackgroundId.value = (ch.backgroundId ?? null) as number | null
+
+  // ability scores
+  abilityAssign.value = {
+    STR: ch.strength ?? null,
+    DEX: ch.dexterity ?? null,
+    CON: ch.constitution ?? null,
+    INT: ch.intelligence ?? null,
+    WIS: ch.wisdom ?? null,
+    CHA: ch.charisma ?? null,
+  }
+
+  // reset avatara fallbacku
+  mainAvatarBroken.value = false
+
+  // proficienty skills
+  const profFromDb = new Set<number>(normalizeSkillIdsFromCharacter(ch))
+
+  // classPickedIds ma zawierać tylko te z profFromDb, które:
+  // - nie są z tła
+  // - są dozwolone przez klasę
+  const allowedFromClass = new Set<number>(classOptionIds.value)
+  const picked: number[] = []
+
+  for (const id of profFromDb) {
+    if (backgroundSkillIds.value.has(id)) continue
+    if (!allowedFromClass.has(id)) continue
+    picked.push(id)
+  }
+
+  // jeśli backend zwrócił więcej niż limit -> przytnij
+  const limit = classPickRequired.value
+  const finalPicked = limit > 0 ? picked.slice(0, limit) : []
+
+  classPickedIds.value = new Set(finalPicked)
+}
+
+async function handleUpdate() {
   submitError.value = null
 
-  // część walidacji ------- do dokończenia
   if (!characterName.value.trim()) {
     submitError.value = 'Podaj nazwę postaci.'
     return
@@ -900,15 +937,13 @@ async function handleSubmit() {
     submitError.value = 'Przypisz wszystkie wartości atrybutów.'
     return
   }
-
   if (selectedClassId.value && classPickRemaining.value > 0) {
     submitError.value = `Wybierz jeszcze ${classPickRemaining.value} umiejętności z klasy.`
     return
   }
 
-
-  // payload zgodny z /api/character
   const payload = {
+    id: characterId.value,
     name: characterName.value.trim(),
     raceId: selectedRaceId.value,
     classId: selectedClassId.value,
@@ -922,26 +957,22 @@ async function handleSubmit() {
     wisdom: abilityAssign.value.WIS!,
     charisma: abilityAssign.value.CHA!,
 
-    characterSkillsIds: proficientSkillIds.value, // int[]
+    characterSkillsIds: proficientSkillIds.value,
   }
 
   submitting.value = true
   try {
-    const res = await axios.post(`${API_URL}/api/character`, payload)
-    console.log('Utworzono postać:', res.data)
-    // alert('Postać zapisana')
+    await axios.put(`${API_URL}/api/character/updatecharacter/${characterId.value}`, payload)
     await router.push('/characters/all')
-    
   } catch (e: any) {
     console.error(e)
     submitError.value =
       e?.response?.data?.message
-      ?? `Nie udało się zapisać postaci (HTTP ${e?.response?.status ?? '??'}).`
+      ?? `Nie udało się zaktualizować postaci (HTTP ${e?.response?.status ?? '??'}).`
   } finally {
     submitting.value = false
   }
 }
-
 
 // --- pobieranie danych z backendu ---
 async function fetchRaces() {
@@ -964,8 +995,18 @@ async function fetchSkills() {
   skills.value = res.data
 }
 
-// okno ze szczegółami (rasa)
+async function fetchCharacterFromAllAndPrefill() {
+  const res = await axios.get<CharacterFromList[]>(`${API_URL}/api/character/allcharacters`)
+  const found = (res.data ?? []).find(c => Number(c.id) === characterId.value)
 
+  if (!found) {
+    throw new Error('Nie znaleziono postaci o podanym ID.')
+  }
+
+  prefillFromCharacter(found)
+}
+
+// --- okna ze szczegółami (rasa/klasa/tło) ---
 const isRaceModalOpen = ref(false)
 const racePreview = ref<Race | null>(null)
 
@@ -987,9 +1028,6 @@ function confirmRaceSelection() {
   isRaceModalOpen.value = false
 }
 
-
-// okno ze szczegółami (klasa)
-
 const isClassModalOpen = ref(false)
 const classPreview = ref<CharacterClass | null>(null)
 
@@ -1008,13 +1046,9 @@ function confirmClassSelection() {
     selectedClassId.value = classPreview.value.id
     mainAvatarBroken.value = false
     resetClassPicks()
-    expandedSkillIds.value = new Set()
   }
   isClassModalOpen.value = false
 }
-
-
-// okno ze szczegółami (tło)
 
 const isBackgroundModalOpen = ref(false)
 const backgroundPreview = ref<Background | null>(null)
@@ -1033,19 +1067,34 @@ function confirmBackgroundSelection() {
   if (backgroundPreview.value) {
     selectedBackgroundId.value = backgroundPreview.value.id
     resetClassPicks()
-    expandedSkillIds.value = new Set()
   }
   isBackgroundModalOpen.value = false
 }
 
-
-
 onMounted(async () => {
-  await Promise.all([
-    fetchRaces(),
-    fetchClasses(),
-    fetchBackgrounds(),
-    fetchSkills(),
-  ])
+  loading.value = true
+  submitError.value = null
+
+  if (!Number.isFinite(characterId.value)) {
+    submitError.value = 'Nieprawidłowe ID postaci.'
+    loading.value = false
+    return
+  }
+
+  try {
+    await Promise.all([
+      fetchRaces(),
+      fetchClasses(),
+      fetchBackgrounds(),
+      fetchSkills(),
+    ])
+
+    await fetchCharacterFromAllAndPrefill()
+  } catch (e: any) {
+    console.error(e)
+    submitError.value = 'Nie udało się pobrać danych postaci do edycji.'
+  } finally {
+    loading.value = false
+  }
 })
 </script>

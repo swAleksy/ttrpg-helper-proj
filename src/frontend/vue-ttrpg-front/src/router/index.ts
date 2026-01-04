@@ -42,11 +42,31 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ProfilView.vue'),
     meta: { requiresAuth: true },
   },
+  // create character
   {
     path: '/characters/new',
     name: 'CharacterCreate',
     component: () => import('@/views/CharacterCreate.vue'),
     meta: { requiresAuth: true }, // tylko dla zalogowanych
+  },
+  // edit character
+  {
+    path: '/characters/:id/edit',
+    name: 'CharacterEdit',
+    component: () => import('@/views/CharacterEdit.vue'),
+    meta: { requiresAuth: true },
+    props: true,
+  },
+  {
+  path: '/characters/all',
+  name: 'CharactersList',
+  component: () => import('@/views/CharactersList.vue'),
+  meta: { requiresAuth: true },
+  },
+  // skrót
+  {
+    path: '/characters',
+    redirect: { name: 'CharactersList' },
   },
   {
     path: '/campaigns',
