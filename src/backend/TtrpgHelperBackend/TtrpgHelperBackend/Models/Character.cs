@@ -16,11 +16,8 @@ public class Character
     public string Name { get; set; } = string.Empty;
     
     
-    // 🔑 Foreign Key: Links Character to Races
     public int RaceId { get; set; }
     
-    // ➡️ Navigation Property: The actual Race object
-    // EF Core convention: Looks for a property named RaceId or Race_id
     public Race Race { get; set; } 
     
     public int ClassId { get; set; }

@@ -18,6 +18,7 @@ public interface IUserService
     
     Task<ServiceResponseH<bool>> ChangePasswordAsync(int userId, ChangePasswordDto request);
     Task<ServiceResponseH<User>> UpdateUserProfileAsync(int userId, UpdateUserProfileDto request);
+    Task<bool> DeleteUserAsync(int userId);
 }
 
 public class UserService : IUserService
@@ -104,7 +105,7 @@ public class UserService : IUserService
         
             if (user == null || !VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
-                return null; // Invalid credentials
+                return null; 
             }
             
             return await CreateTokenResponse(user);
@@ -222,7 +223,6 @@ public class UserService : IUserService
     }
     public async Task<ServiceResponseH<User>> UpdateUserProfileAsync(int userId, UpdateUserProfileDto request)
     {
-        // 1. Use FirstOrDefaultAsync (Safer than FindAsync for debugging types)
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null)
@@ -230,13 +230,10 @@ public class UserService : IUserService
             return new ServiceResponseH<User> { Success = false, Message = "User not found." };
         }
 
-        // 2. Validate inputs before assigning
         if (!string.IsNullOrWhiteSpace(request.UserName))
         {
-            // Check if username is actually different to avoid DB hits
             if (user.UserName != request.UserName)
             {
-                // Optional: Check if taken by someone else
                 var exists = await _context.Users.AnyAsync(u => u.UserName == request.UserName && u.Id != userId);
                 if (exists)
                     return new ServiceResponseH<User> { Success = false, Message = "Username already taken." };
@@ -250,7 +247,6 @@ public class UserService : IUserService
             user.Email = request.Email;
         }
     
-        // 3. Save
         await _context.SaveChangesAsync();
 
         return new ServiceResponseH<User> { Data = user, Message = "Profile updated successfully." };
@@ -259,32 +255,67 @@ public class UserService : IUserService
     public async Task<bool> DeleteUserAsync(int userId)
     {
         var userToDelete = await _context.Users
-            .Include(r => r.UserRoles) // Upewnij się, że UserRoles są załadowane do usunięcia
+            .Include(u => u.UserRoles)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (userToDelete == null)
         {
             return false;
         }
+        
+        var campaigns = await _context.Campaigns
+            .Where(c => c.GameMasterId == userId)
+            .ToListAsync();
 
-        // 1. Usuń wszystkie Friendship, w których user jest stroną
+        if (campaigns.Any())
+        {
+            _context.Campaigns.RemoveRange(campaigns);
+        }
+        
+        var characters = await _context.Characters
+            .Where(c => c.UserId == userId)
+            .ToListAsync();
+
+        if (characters.Any())
+        {
+            _context.Characters.RemoveRange(characters);
+        }
+        
         var relatedFriendships = await _context.Friendships
             .Where(f => f.SourceUserId == userId || f.TargetUserId == userId)
             .ToListAsync();
-        _context.Friendships.RemoveRange(relatedFriendships);
-    
-        // 2. Usuń inne powiązane dane (np. Postaci, Kampanie TTRPG, itp.)
-        // TODO: Usunięcie postaci powiązanych, kampanii, itp.
+
+        if (relatedFriendships.Any())
+        {
+            _context.Friendships.RemoveRange(relatedFriendships);
+        }
+
+        var relatedMessages = await _context.ChatMessages
+            .Where(m => m.SenderId == userId || m.ReceiverId == userId)
+            .ToListAsync();
+
+        if (relatedMessages.Any())
+        {
+            _context.ChatMessages.RemoveRange(relatedMessages);
+        }
+
+        // 4. (Opcjonalnie) USUWANIE POSTACI (Characters)
+        // Jeśli masz tabelę Characters i tam też jest Restrict/Cascade, warto to obsłużyć:
         // var characters = await _context.Characters.Where(c => c.UserId == userId).ToListAsync();
         // _context.Characters.RemoveRange(characters);
 
-        // 3. Usuń Role
-        _context.UserRoles.RemoveRange(userToDelete.UserRoles);
+        // 5. Usuwanie ról użytkownika
+        if (userToDelete.UserRoles != null && userToDelete.UserRoles.Any())
+        {
+            _context.UserRoles.RemoveRange(userToDelete.UserRoles);
+        }
 
-        // 4. Usuń samego użytkownika
+        // 6. Finalne usunięcie użytkownika
         _context.Users.Remove(userToDelete);
 
+        // Zapisanie wszystkich zmian w jednej transakcji
         await _context.SaveChangesAsync();
+    
         return true;
     }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed } from 'vue'
 import { useCampaignStore } from '@/stores/CampaignStore'
-import { useAuthStore } from '@/stores/auth' // Potrzebne do sprawdzenia czy jesteś GMem
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<{
@@ -12,18 +12,15 @@ const router = useRouter()
 const campaignStore = useCampaignStore()
 const authStore = useAuthStore()
 
-// 1. Pobieramy kampanię z gettera
 const campaign = computed(() => {
   return campaignStore.getCampaignById(Number(props.id))
 })
 
-// 2. Sprawdzamy czy aktualny user jest Mistrzem Gry tej kampanii
 const isGameMaster = computed(() => {
   if (!campaign.value || !authStore.user) return false
   return campaign.value.gameMasterId === authStore.user.id
 })
 
-// 3. Formatowanie daty (pomocnicza funkcja)
 const formatDate = (dateString: string) => {
   if (!dateString) return 'TBA'
   return new Date(dateString).toLocaleDateString('pl-PL', {
@@ -34,7 +31,6 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// 4. Akcje
 const openSession = (sessionId: number) => {
   router.push(`/campaigns/${Number(props.id)}/session/${sessionId}`)
 }
@@ -48,18 +44,16 @@ const handleCreateSession = () => {
 
 const handleDeleteSession = async (sessionId: number) => {
   if (confirm('Czy na pewno chcesz usunąć tę sesję?')) {
-    // Tu musisz dodać akcję w store, np. campaignStore.deleteSession(sessionId)
+    await campaignStore.deleteSession(sessionId, Number(props.id))
     console.log('Delete session', sessionId)
   }
 }
 
 onMounted(async () => {
-  // Jeśli nie ma kampanii w cache LUB (ważne!) jeśli w cache nie ma załadowanych sesji
   if (!campaign.value || !campaign.value.sessions) {
     try {
       await campaignStore.fetchCampaignGmById(Number(props.id))
     } catch {
-      // jeśli nie GM → spróbuj PLAYER
       await campaignStore.fetchCampaignPlayerById(Number(props.id))
     }
   }

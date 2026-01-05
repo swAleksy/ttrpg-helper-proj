@@ -29,18 +29,12 @@ public class ChatService :  IChatService
         _userHelper = userHelper;
     }
 
-// Dodano parametr senderName
     public async Task SendPrivateMessage(int senderId, string senderName, int receiverId, string content)
     {
-        // 1. Walidacja (przeniesiona z Huba)
-        // Opcjonalnie: Możesz pominąć to sprawdzenie dla wydajności, 
-        // jeśli wierzysz, że frontend wysyła poprawne ID.
-        // Ale dla spójności danych warto sprawdzić czy odbiorca istnieje.
         var receiverExists = await _context.Users.AnyAsync(u => u.Id == receiverId);
         if (!receiverExists)
             throw new Exception("Receiver not found");
 
-        // 2. Zapis do Bazy
         var msg = new ChatMessage
         {
             SenderId = senderId,
@@ -53,8 +47,6 @@ public class ChatService :  IChatService
         _context.ChatMessages.Add(msg);
         await _context.SaveChangesAsync();
         
-        // 3. Przygotowanie DTO
-        // Nie musimy już robić zapytania do bazy po SenderName, bo dostaliśmy je w argumencie!
         var msgDto = new MessageDto
         {
             Id = msg.Id,
@@ -66,8 +58,7 @@ public class ChatService :  IChatService
             IsRead = msg.IsRead
         };
         
-        // 4. Wysyłka SignalR
-        // Upewniamy się, że konwertujemy ID na string, bo SignalR User ID to string
+        // Wysyłka signalr dla obu stron
         await _hubContext.Clients.User(receiverId.ToString()).SendAsync("ReceivePrivateMessage", msgDto);
         await _hubContext.Clients.User(senderId.ToString()).SendAsync("ReceivePrivateMessage", msgDto);
         await _notificationService.SendNotification(
@@ -82,17 +73,17 @@ public class ChatService :  IChatService
     public async Task<List<MessageDto>> GetPrivateChatHistory(int userId, int otherUserId)
     {
         return await _context.ChatMessages
-            .AsNoTracking() // Ważne dla wydajności przy samym odczycie!
-            .Include(m => m.Sender) // Ładujemy dane nadawcy
+            .AsNoTracking() 
+            .Include(m => m.Sender) 
             .Where(m =>
                 (m.SenderId == userId && m.ReceiverId == otherUserId) ||
                 (m.SenderId == otherUserId && m.ReceiverId == userId))
             .OrderBy(m => m.SentAt)
-            .Select(m => new MessageDto // Projekcja bezpośrednio do DTO
+            .Select(m => new MessageDto 
             {
                 Id = m.Id,
                 SenderId = m.SenderId,
-                SenderName = m.Sender.UserName, // Dostępne dzięki .Include
+                SenderName = m.Sender.UserName,
                 ReceiverId = m.ReceiverId.Value,
                 Content = m.Content,
                 SentAt = m.SentAt,
@@ -123,7 +114,7 @@ public class ChatService :  IChatService
             {
                 Id = m.Id,
                 SenderId = m.SenderId,
-                SenderName = m.Sender.UserName, // Wymaga Include(m => m.Sender) lub User w modelu
+                SenderName = m.Sender.UserName, 
                 ReceiverId = m.ReceiverId.Value,
                 Content = m.Content,
                 SentAt = m.SentAt,

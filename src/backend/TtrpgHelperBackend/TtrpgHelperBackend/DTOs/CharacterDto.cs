@@ -9,7 +9,6 @@ public class CharacterDto
     public int BackgroundId { get; set; }
     public int Level { get; set; } = 1;
 
-    // Ability Scores (as we discussed, required inputs)
     public int Strength { get; set; }
     public int Dexterity { get; set; }
     public int Constitution { get; set; }

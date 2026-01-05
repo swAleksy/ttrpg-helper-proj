@@ -21,7 +21,6 @@ public class NotificationController : ControllerBase
     }
     
 
-    // GET: api/notification/unread
     [HttpGet("unread")]
     public async Task<ActionResult<List<NotificationDto>>> GetUnreadNotifications()
     {
@@ -32,7 +31,6 @@ public class NotificationController : ControllerBase
         return Ok(await _notificationService.GetUnreadNotificationsAsync(userId.Value));
     }
 
-    // POST: api/notification/mark-read/{id}
     [HttpPost("mark-read/{id}")]
     public async Task<IActionResult> MarkAsRead(int id)
     {

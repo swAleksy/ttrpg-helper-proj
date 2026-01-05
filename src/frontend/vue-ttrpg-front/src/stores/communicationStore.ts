@@ -13,21 +13,17 @@ import { useNotificationStore } from '@/stores/notificationStore'
 import type { NotificationDto } from '@/types'
 
 export const useCommunicationStore = defineStore('communication', () => {
-  // State
   const connection = ref<HubConnection | null>(null)
   const hasNewMessages = ref(false)
 
-  // Getters
   const isConnected = computed(() => connection.value?.state === HubConnectionState.Connected)
 
-  // Actions
   const initSignalR = async () => {
     const authStore = useAuthStore()
 
     // Prevent double connection or connection without token
     if (isConnected.value || !authStore.token) return
 
-    // Fetch initial state
     const friendsStore = useFriendsStore()
     const notificationStore = useNotificationStore()
 

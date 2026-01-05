@@ -61,9 +61,6 @@ export const useSessionStore = defineStore('session', {
       }
     },
 
-    /**
-     * Iterates over the current session's players and fetches full info for each.
-     */
     async fetchSessionPlayersDetails() {
       if (!this.session) return
 
@@ -92,7 +89,6 @@ export const useSessionStore = defineStore('session', {
         return
       }
 
-      // Wywołujemy równolegle dla wydajności
       await Promise.all([
         this.fetchNotes(campaignId),
         this.fetchItems(campaignId),
@@ -150,7 +146,6 @@ export const useSessionStore = defineStore('session', {
     },
 
     /**
-     * Wysyłanie eventu (REST).
      * Zakładamy, że Backend po otrzymaniu POSTa sam wyemituje zdarzenie przez SignalR
      * do innych, więc nie musimy dodawać go ręcznie do tablicy, jeśli SignalR działa.
      * Ale dla płynności UI ("optimistic UI") często dodaje się go od razu.
@@ -165,7 +160,6 @@ export const useSessionStore = defineStore('session', {
       }
 
       try {
-        // Po POST backend zwróci nam pełny obiekt GetSessionEventDto (z ID i Userem)
         const response = await axios.post<GetSessionEventDto>(`${API_URL}/api/sessionevent`, dto)
 
         const newEvent = this.mapDtoToModel(response.data)
@@ -179,10 +173,8 @@ export const useSessionStore = defineStore('session', {
       const authStore = useAuthStore()
       if (!authStore.token) return
 
-      // Jeśli już połączony z tą samą sesją, nie rób nic
       if (this.isConnected && this.session?.id === sessionId) return
 
-      // Zbuduj połączenie
       this.hubConnection = new HubConnectionBuilder()
         .withUrl(SIGNALR_HUB_SESSION_URL, {
           accessTokenFactory: () => authStore.token || '',
@@ -190,7 +182,6 @@ export const useSessionStore = defineStore('session', {
         .withAutomaticReconnect()
         .build()
 
-      // 1. Obsługa przychodzących zdarzeń (zgodnie z C#: SessionEventCreated)
       this.hubConnection.on('SessionEventCreated', (dto: GetSessionEventDto) => {
         console.log('SignalR received event:', dto)
         if (dto.type === 'UserJoined' && dto.userId === authStore.user?.id) {
@@ -201,12 +192,10 @@ export const useSessionStore = defineStore('session', {
         this.addEventIfMissing(eventModel)
       })
 
-      // Start połączenia
       try {
         await this.hubConnection.start()
         console.log('SignalR Connected.')
 
-        // 2. Dołączenie do grupy (zgodnie z C#: JoinSession)
         await this.hubConnection.invoke('JoinSession', sessionId)
         console.log(`Joined SignalR group for session ${sessionId}`)
       } catch (error) {
@@ -216,13 +205,12 @@ export const useSessionStore = defineStore('session', {
 
     async stopSignalR() {
       if (this.hubConnection) {
-        // Opcjonalnie: Opuść grupę przed rozłączeniem (jeśli backend tego nie robi automatycznie)
         try {
           if (this.session) {
             await this.hubConnection.invoke('LeaveSession', this.session.id)
           }
         } catch (e) {
-          /* ignore error during disconnect */
+          console.error('SignalR leave error:', e)
         }
 
         await this.hubConnection.stop()
@@ -274,7 +262,6 @@ export const useSessionStore = defineStore('session', {
             data: parsedData as DiceRollPayload,
           }
 
-        // ... handle other cases ...
         case 'UserJoined':
           return {
             id: dto.id,
@@ -311,7 +298,7 @@ export const useSessionStore = defineStore('session', {
     },
 
     clearSession() {
-      this.stopSignalR() // Ważne: zamykamy socket przy czyszczeniu
+      this.stopSignalR()
       this.session = null
       this.players = []
       this.events = []

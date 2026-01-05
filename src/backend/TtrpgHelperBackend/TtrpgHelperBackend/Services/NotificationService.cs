@@ -45,18 +45,16 @@ public class NotificationService : INotificationService
         _context.Notifications.Add(notification);
         await _context.SaveChangesAsync();
 
-        // 2. Mapujemy na DTO (żeby nie wysyłać całej encji z cyklami)
         var dto = new NotificationDto
         {
             Id = notification.Id,
-            Type = notification.Type.ToString(), // np. "FriendRequest"
+            Type = notification.Type.ToString(), // np. FriendRequest
             Title = notification.Title,
             Message = notification.Message,
             IsRead = notification.IsRead,
             CreatedAt = notification.CreatedAt,
             FromUserId = notification.FromUserId
         };
-        // A. Ogólne powiadomienie (do listy powiadomień)
         await _hubContext.Clients.User(targetUserId.ToString())
             .SendAsync("ReceiveNotification", dto);
         return dto;

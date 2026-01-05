@@ -6,12 +6,10 @@ import { useCampaignStore } from '@/stores/CampaignStore'
 const router = useRouter()
 const campaignStore = useCampaignStore()
 
-// Pobieramy obie listy osobno
 const gmCampaigns = computed(() => campaignStore.gmCampaigns)
 const playerCampaigns = computed(() => campaignStore.getUniquePlayerCampaigns)
 
 onMounted(() => {
-  // Wywołujemy oba endpointy przy załadowaniu widoku
   campaignStore.fetchGmCampaigns()
   campaignStore.fetchPlayerCampaigns()
 })

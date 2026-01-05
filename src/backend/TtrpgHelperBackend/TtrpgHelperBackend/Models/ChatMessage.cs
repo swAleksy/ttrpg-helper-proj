@@ -9,30 +9,25 @@ public class ChatMessage
     [Key]
     public int Id { get; set; }
 
-    // 1. KTO WYSŁAŁ (Zawsze wymagane)
     [Required]
     public int SenderId { get; set; }
     
     [ForeignKey("SenderId")]
-    public virtual User Sender { get; set; } = null!; // Pozwala na .Include(m => m.Sender)
+    public virtual User Sender { get; set; } = null!; 
 
-    // 2. TREŚĆ
     [Required]
-    [MaxLength(1000)] // Warto dać limit
+    [MaxLength(1000)] 
     public string Content { get; set; } = string.Empty;
 
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
     public bool IsRead { get; set; } = false;
 
-    // --- OPCJA A: PRYWATNA WIADOMOŚĆ (DM) ---
-    // Nullable, bo w czacie grupowym to będzie null
+    // PRYWATNA WIADOMOŚĆ 
     public int? ReceiverId { get; set; }
 
     [ForeignKey("ReceiverId")]
-    public virtual User? Receiver { get; set; } // Pozwala pobrać dane odbiorcy
+    public virtual User? Receiver { get; set; } 
 
-    // --- OPCJA B: CZAT GRUPOWY / SESJA GRY ---
-    // Nullable, bo w prywatnym czacie to będzie null
-    // UWAGA: Upewnij się czy SessionId to int czy string/Guid w Twoim systemie gry!
+    // CZAT GRUPOWY / SESJA GRY 
     public string? SessionId { get; set; } 
 }

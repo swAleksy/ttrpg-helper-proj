@@ -1,13 +1,11 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import router from '@/router'
 import { API_URL } from '@/config/api'
 import { useAuthStore } from './auth'
 
-import type { PlayerDto, SessionDto, GameCampaignDto } from '@/types/index'
+import type { SessionDto, GameCampaignDto } from '@/types/index'
 
 export const useCampaignStore = defineStore('campaign', {
-  // 1. STATE: Tutaj lądują surowe dane z API
   state: () => ({
     gmCampaigns: [] as GameCampaignDto[],
     playerCampaigns: [] as GameCampaignDto[],
@@ -15,17 +13,12 @@ export const useCampaignStore = defineStore('campaign', {
     isLoading: false,
   }),
 
-  // 2. GETTERS: Tutaj tworzysz "widoki" na te dane (np. tylko Twoje kampanie)
   getters: {
     getUniquePlayerCampaigns: (state) => {
-      // Pobieramy same ID kampanii, gdzie user jest GMem, żeby łatwo sprawdzać
       const gmCampaignIds = state.gmCampaigns.map((c) => c.id)
-
-      // Zwracamy tylko te kampanie gracza, których ID NIE MA na liście GM
       return state.playerCampaigns.filter((c) => !gmCampaignIds.includes(c.id))
     },
 
-    // Getter do wyciągnięcia konkretnej kampanii z załadowanej już listy
     getCampaignById: (state) => {
       return (id: number) => {
         const foundInGm = state.gmCampaigns.find((c) => c.id === id)
@@ -34,12 +27,9 @@ export const useCampaignStore = defineStore('campaign', {
         const foundInPlayer = state.playerCampaigns.find((c) => c.id === id)
         return foundInPlayer || undefined
       }
-      // Getter do filtrowania
-      // activeCampaigns: (state) => state.campaigns.filter((c) => c.active),
     },
   },
 
-  // 3. ACTIONS: Tutaj pobierasz dane i zmieniasz state
   actions: {
     async fetchGmCampaigns() {
       const authStore = useAuthStore()
@@ -137,10 +127,9 @@ export const useCampaignStore = defineStore('campaign', {
         const response = await axios.post(`${API_URL}/api/campaign/gm/create`, {
           gameMasterId: gameMasterId,
           name: name,
-          description: desc, // Passing current user as the creator
+          description: desc,
         })
 
-        // Add the new campaign to the list immediately so the UI updates
         this.gmCampaigns.push(response.data)
         return true
       } catch (error) {
@@ -170,7 +159,7 @@ export const useCampaignStore = defineStore('campaign', {
           campaignId: campaignId,
         })
 
-        // Możesz chcieć zaktualizować listę sesji w konkretnej kampanii po dodaniu
+        // aktualizacja listy sessji
         const campaign = this.gmCampaigns.find((c) => c.id === campaignId)
         if (campaign && campaign.sessions) {
           campaign.sessions.push(response.data)
@@ -180,6 +169,22 @@ export const useCampaignStore = defineStore('campaign', {
         return true
       } catch (error) {
         console.error('Failed to create session', error)
+        return false
+      }
+    },
+
+    async deleteSession(id: number, campaignId: number) {
+      try {
+        await axios.delete(`${API_URL}/api/session/gm/delete/${id}`)
+
+        const campaign = this.gmCampaigns.find((c) => c.id === campaignId)
+        if (campaign && campaign.sessions) {
+          campaign.sessions = campaign.sessions.filter((s) => s.id !== id)
+        }
+
+        return true
+      } catch (error) {
+        console.error('Failed to delete session', error)
         return false
       }
     },

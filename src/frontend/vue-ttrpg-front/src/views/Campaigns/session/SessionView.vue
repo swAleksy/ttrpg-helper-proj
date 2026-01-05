@@ -77,7 +77,7 @@ onBeforeUnmount(() => {
   sessionStore.clearSession()
 })
 
-const currentSessionId = () => sessionStore.session?.id
+// const currentSessionId = () => sessionStore.session?.id
 
 watch(
   () => events.value.length,
@@ -98,7 +98,6 @@ const getAvatarForEvent = (userId: number) => {
   return avatarByUserId.value[userId] || resolveAvatarUrl(null, '?')
 }
 
-// Funkcja obsługi dodawania gracza (mock)
 const handleAddPlayer = async () => {
   if (!newPlayerId.value || !sessionStore.session) return
 
@@ -147,9 +146,8 @@ const triggerAction = async (actionName: string) => {
     return
   }
 
-  // tu zostają inne akcje
   if (actionName === 'Test Umiejętności') {
-    // ... cokolwiek tu kiedyś dodasz
+    // TO DO KIEDYS CLUELESS
   }
 }
 </script>

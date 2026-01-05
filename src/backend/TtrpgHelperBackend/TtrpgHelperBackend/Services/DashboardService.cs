@@ -40,8 +40,6 @@ namespace TtrpgHelperBackend.Services
                 })
                 .ToListAsync();
             
-            // todo - zaimplementować sesje
-            
             var dashboard = new DashboardDto
             {
                 UserName = user.UserName,

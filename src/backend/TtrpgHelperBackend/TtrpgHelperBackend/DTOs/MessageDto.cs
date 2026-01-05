@@ -3,7 +3,7 @@
 public class MessageDto
 {
     public int Id { get; set; }
-    public string SenderName { get; set; } // Zamiast SenderId, często lepiej od razu wysłać nazwę
+    public string SenderName { get; set; }
     public int SenderId { get; set; }
     public int ReceiverId { get; set; }
     public string Content { get; set; }

@@ -61,7 +61,6 @@ const handleLogout = () => {
   router.push('/')
 }
 
-// Lifecycle
 onMounted(() => {
   if (isAuthenticated.value) {
     commStore.initSignalR()

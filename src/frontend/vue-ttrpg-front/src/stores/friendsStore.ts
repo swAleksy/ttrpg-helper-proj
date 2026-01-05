@@ -9,23 +9,19 @@ import { API_URL } from '@/config/api'
 import { resolveAvatarUrl } from '@/utils/avatar'
 import type { UserInfoDto } from '@/types'
 
-// Re-export type for backward compatibility
 export type { UserInfoDto } from '@/types'
 
 export const useFriendsStore = defineStore('friends', () => {
-  // State
   const friends = ref<UserInfoDto[]>([])
   const pendingRequests = ref<UserInfoDto[]>([])
   const isLoading = ref(false)
   const isFriendsLoading = ref(false)
   const isPendingLoading = ref(false)
 
-  // Getters
   const friendCount = computed(() => friends.value.length)
   const pendingCount = computed(() => pendingRequests.value.length)
   const hasPendingRequests = computed(() => pendingRequests.value.length > 0)
 
-  // Actions
   const sendFriendRequest = async (friendId: string) => {
     if (!friendId) return
     isLoading.value = true
@@ -102,7 +98,6 @@ export const useFriendsStore = defineStore('friends', () => {
     }
   }
 
-  // Legacy method for backward compatibility
   const resolvePending = async (friendId: number, accept: boolean) => {
     if (accept) {
       await acceptRequest(friendId)

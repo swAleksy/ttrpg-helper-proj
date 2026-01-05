@@ -29,7 +29,6 @@ public class UploadController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
-        // 1. Validate File Type (Security)
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!allowedExtensions.Contains(extension))
@@ -38,23 +37,18 @@ public class UploadController : ControllerBase
         if (file.Length > 2 * 1024 * 1024) // 2 MB limit
             return BadRequest("File too large (max 2MB).");
         
-        // 2. Generate Unique Filename to prevent collisions
         var fileName = $"{Guid.NewGuid()}{extension}";
     
-        // 3. Define Path (e.g., wwwroot/uploads/avatars)
         var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
         if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
 
         var filePath = Path.Combine(uploadPath, fileName);
 
-        // 4. Save file to disk
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
-
-        // 5. Update User in DB (Assuming you have a service method for this)
-        // The URL should be relative, e.g., "/uploads/avatars/guid.jpg"
+        
         var avatarUrl = $"/uploads/avatars/{fileName}";
     
         var result = await _uploadService.UpdateUserAvatarAsync(userId.Value, avatarUrl);

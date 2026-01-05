@@ -11,7 +11,6 @@ namespace TtrpgHelperBackend.MessagesAndNotofications;
 [Authorize]
 public class MainHub : Hub
 {
-    // private static readonly Dictionary<string, string> _connections = new();
     private readonly IChatService _chatService;
     private readonly INotificationService _notificationService;
 
@@ -24,7 +23,6 @@ public class MainHub : Hub
     public async Task SendPrivateMessage(int receiverId, string message)
     {
         var senderIdStr = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        // Pobieramy nazwę usera z tokena, żeby nie robić SELECT w bazie
         var senderName = Context.User?.FindFirstValue(ClaimTypes.Name);
 
         if (string.IsNullOrEmpty(senderIdStr) || string.IsNullOrEmpty(senderName))
@@ -37,12 +35,10 @@ public class MainHub : Hub
 
         try
         {
-            // Przekazujemy senderName do serwisu
             await _chatService.SendPrivateMessage(senderId, senderName, receiverId, message);
         }
         catch (Exception ex)
         {
-            // Łapiemy wyjątek z serwisu (np. "Receiver not found") i rzucamy HubException
             throw new HubException(ex.Message);
         }
     }
@@ -66,29 +62,7 @@ public class MainHub : Hub
         }
     }
     
-    // public override async Task OnConnectedAsync()
-    // {
-    //     var userId =  GetUserId();
-    //     _connections[userId] = Context.ConnectionId;
-    //     await base.OnConnectedAsync();
-    // }
-    //
-    // public override async Task OnDisconnectedAsync(Exception? exception)
-    // {
-    //     var userId =  GetUserId();
-    //     _connections.Remove(userId);
-    //     await base.OnDisconnectedAsync(exception);
-    // }
+    // public override async Task OnConnectedAsync() {}
+    // public override async Task OnDisconnectedAsync(Exception? exception) {}
     
-    //
-    // public async Task SendNotification(string userId, string type, string message)
-    // {
-    //     var senderId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     
-    //     if (string.IsNullOrEmpty(senderId)) 
-    //         throw new HubException("Unauthorized");
-    //
-    //     await _notificationService.SendNotificationAsync();
-    // }
-
 }

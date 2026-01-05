@@ -8,16 +8,13 @@ import axios from 'axios'
 import { API_URL } from '@/config/api'
 import type { NotificationDto } from '@/types'
 
-// Re-export type for backward compatibility
 export type { NotificationDto } from '@/types'
 
 export const useNotificationStore = defineStore('notifications', () => {
-  // State
   const notifications = ref<NotificationDto[]>([])
   const isLoading = ref(false)
   const unreadCount = ref(0)
 
-  // Getters
   const hasUnread = computed(() => unreadCount.value > 0)
   const unreadNotifications = computed(() => notifications.value.filter((n) => !n.isRead))
   const hasUnreadFrom = computed(() => (userId: number) => {
@@ -26,7 +23,6 @@ export const useNotificationStore = defineStore('notifications', () => {
     )
   })
 
-  // Actions
   const fetchNotifications = async () => {
     if (isLoading.value) return
     isLoading.value = true
@@ -42,7 +38,6 @@ export const useNotificationStore = defineStore('notifications', () => {
   }
 
   const pushNotification = (notification: NotificationDto) => {
-    // Add new item to the top of the array
     notifications.value.unshift(notification)
     if (!notification.isRead) {
       unreadCount.value++
@@ -50,7 +45,6 @@ export const useNotificationStore = defineStore('notifications', () => {
   }
 
   const markAsRead = async (id: number) => {
-    // Optimistic update
     const notification = notifications.value.find((n) => n.id === id)
     if (notification && !notification.isRead) {
       notification.isRead = true
@@ -61,7 +55,6 @@ export const useNotificationStore = defineStore('notifications', () => {
       await axios.post(`${API_URL}/api/notification/mark-read/${id}`)
     } catch (error) {
       console.error('Error marking notification as read:', error)
-      // Revert on failure
       if (notification) {
         notification.isRead = false
         unreadCount.value++

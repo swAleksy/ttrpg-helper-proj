@@ -9,7 +9,6 @@ import { API_URL } from '@/config/api'
 import { resolveAvatarUrl, generateUiAvatar } from '@/utils/avatar'
 import type { UserProfile, LoginResponse } from '@/types'
 
-// Re-export for backward compatibility
 export { API_URL } from '@/config/api'
 
 export const useAuthStore = defineStore('auth', {

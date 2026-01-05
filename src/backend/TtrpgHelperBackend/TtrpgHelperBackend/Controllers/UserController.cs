@@ -163,26 +163,21 @@ public class UserController : ControllerBase
     [HttpDelete("delete-user")]
     public async Task<IActionResult> DeleteUser()
     {
-        var userId = GetUserId();
-    
+        var userId = GetUserId(); 
+
         if (userId == null)
         {
             return BadRequest("Token issue: Claim not found"); 
         }
-    
-        var user = await _context.Users
-            .Include(r => r.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(c => c.Id == userId);
 
-        if (user == null)
+        var result = await _userService.DeleteUserAsync(userId.Value);
+
+        if (!result)
         {
             return NotFound("User ID from token not found in DB.");
         }
-        // TODO: WYWALIC Z BAZY CALA RESZTE SYFU PODPIETA POD USERA POSTACI ETC.    
-        _context.Users.Remove(user);
-        await _context.SaveChangesAsync();
-        return Ok("User deleted successfully.");
+
+        return Ok("User and all related data (friends, messages) deleted successfully.");
     }
     private int? GetUserId()
     {

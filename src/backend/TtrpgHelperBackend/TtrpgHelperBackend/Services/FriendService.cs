@@ -23,7 +23,6 @@ public class FriendService : IFriendService
         _context = context;
     }
 
-    // 1. Wysyłanie zaproszenia (zabezpieczone przed dublowaniem)
     public async Task<ServiceResponseH<bool>> SendFriendRequestAsync(int sourceUserId, int targetUserId)
     {
         if (sourceUserId == targetUserId)
@@ -54,11 +53,8 @@ public class FriendService : IFriendService
         return new ServiceResponseH<bool> { Message = "Friend request sent.", Success = true };
     }
 
-    // 2. Akceptacja zaproszenia
-    // requestingUserId -> ten kto wysłał zaproszenie (np. User1)
-    // currentUserId -> ten kto klika "Akceptuj" (np. User2)
+
     public async Task<ServiceResponseH<bool>> AcceptFriendRequestAsync(int currentUserId, int requesterUserId){
-        // Query Logic: Find a request sent BY requester TO me (current)
         var friendship = await _context.Friendships
             .FirstOrDefaultAsync(f => 
                 f.SourceUserId == requesterUserId && 
@@ -78,7 +74,6 @@ public class FriendService : IFriendService
 
     public async Task<IEnumerable<UserInfoDto>> GetFriendsAsync(int userId)
     {
-        // Pobieramy relacje, gdzie user jest po lewej LUB po prawej stronie ORAZ status to Accepted
         var friendships = await _context.Friendships
             .Include(f => f.SourceUser)
             .Include(f => f.TargetUser)
@@ -86,7 +81,6 @@ public class FriendService : IFriendService
                         && f.Status == FriendshipStatus.Accepted)
             .ToListAsync();
 
-        // Mapujemy na listę użytkowników "po drugiej stronie kabla"
         return friendships.Select(f => 
         {
             var friend = f.SourceUserId == userId ? f.TargetUser : f.SourceUser;
@@ -102,7 +96,6 @@ public class FriendService : IFriendService
 
     public async Task<ServiceResponseH<bool>> RemoveFriendshipAsync(int userId, int friendId)
     {
-        // Szukamy relacji w obie strony
         var friendship = await _context.Friendships
             .FirstOrDefaultAsync(f => 
                 (f.SourceUserId == userId && f.TargetUserId == friendId) ||
@@ -119,7 +112,6 @@ public class FriendService : IFriendService
         return new ServiceResponseH<bool> { Message = "Friend removed.", Success = true }; 
     }
     
-    // 5. Pobieranie oczekujących zaproszeń (tylko te, które ktoś wysłał DO OBECNEGO USERA)
     public async Task<IEnumerable<UserInfoDto>> GetPendingRequestsAsync(int userId)
     {
         return await _context.Friendships

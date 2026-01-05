@@ -46,12 +46,11 @@ public class CharacterService : ICharacterService
                 .Select(skillId => new CharacterSkill
                 {
                     SkillId = skillId,
-                    IsProficient = true, // Flag it as proficient
-                    SkillValue = 0 // Placeholder, or calculate this on save/update
+                    IsProficient = true, 
+                    SkillValue = 0 // Placeholder
                 }).ToList();
         }
 
-        // 3. Add the Character (and linked CharacterSkills) to the database
         _context.Characters.Add(newCharacter);
         await _context.SaveChangesAsync();
         
@@ -90,7 +89,6 @@ public class CharacterService : ICharacterService
             });
         }
 
-        // Save changes
         await _context.SaveChangesAsync();
         return character;
     }
