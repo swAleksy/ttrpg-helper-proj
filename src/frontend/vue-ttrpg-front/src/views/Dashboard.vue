@@ -1,18 +1,15 @@
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100">
-    <div class="mx-auto max-w-5xl px-4 py-12">
+    <div class="mx-auto max-w-6xl px-4 py-8 space-y-6">
       <!-- Header -->
-      <header class="space-y-2">
-        <h1 class="text-3xl sm:text-4xl font-semibold tracking-tight">
-          Dashboard
-        </h1>
-        <p class="text-slate-400">
-          Szybki dostęp do modułów.
-        </p>
+      <header class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div class="space-y-1">
+          <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p class="text-sm text-slate-400">Szybki dostęp do modułów.</p>
+        </div>
       </header>
 
-      <!-- Kafelki -->
-      <section class="mt-10 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         <!-- Postacie -->
         <router-link
           :to="CHARACTERS_PATH"
@@ -27,8 +24,6 @@
                 <h2 class="text-xl sm:text-2xl font-semibold tracking-tight truncate">
                   Postacie
                 </h2>
-
-                <!-- stała “estetyczna” wysokość opisu -->
                 <p class="mt-3 text-sm text-slate-400 leading-relaxed min-h-[40px]">
                   Zarządzaj postaciami: lista, podgląd i edycja.
                 </p>
@@ -38,7 +33,6 @@
 
           <div class="mt-7 h-px w-full bg-slate-800/70" />
 
-          <!-- dół zawsze w jednej linii, bez rozjeżdżania -->
           <div class="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
             <span class="shrink-0">Moduł</span>
             <span
@@ -64,7 +58,6 @@
                 <h2 class="text-xl sm:text-2xl font-semibold tracking-tight truncate">
                   Kampanie i Sesje
                 </h2>
-
                 <p class="mt-3 text-sm text-slate-400 leading-relaxed min-h-[40px]">
                   Dostęp do kampanii, sesji i powiązanych informacji.
                 </p>
@@ -84,7 +77,7 @@
             </span>
           </div>
         </router-link>
-      </section>
+      </div>
     </div>
   </div>
 </template>
