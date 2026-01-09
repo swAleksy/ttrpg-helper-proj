@@ -16,25 +16,12 @@ const routes: RouteRecordRaw[] = [
     path: '/register',
     name: 'Register',
     component: () => import('@/views/Register.vue'),
-    // component: () => import('@/views/SignUpPage.vue'), // wersja Adama
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
     meta: { requiresAuth: true }, // tylko dla zalogowanych
-  },
-  {
-    path: '/player',
-    name: 'PlayerZone',
-    component: () => import('@/views/PlayerZone.vue'),
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/gm',
-    name: 'GmZone',
-    component: () => import('@/views/GmZone.vue'),
-    meta: { requiresAuth: true },
   },
   {
     path: '/profile',

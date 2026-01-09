@@ -35,8 +35,8 @@ const navLinks = computed(() => {
   }
   return [
     { to: '/dashboard', label: 'Panel' },
-    { to: '/characters', label: 'Characters' },
-    { to: '/campaigns', label: 'Campaigns' },
+    { to: '/characters', label: 'Postacie' },
+    { to: '/campaigns', label: 'Kampanie i Sesje' },
   ]
 })
 

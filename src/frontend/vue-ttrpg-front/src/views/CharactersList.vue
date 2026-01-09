@@ -10,13 +10,26 @@
           </p>
         </div>
 
-        <!-- przycisk Nowa postać -->
-        <router-link
-          to="/characters/new"
-          class="inline-flex items-center gap-2 rounded-xl px-4 py-2 border border-emerald-500/40 bg-emerald-500/10 text-emerald-100 hover:bg-emerald-500/20 hover:border-emerald-400 transition"
+        <button
+          type="button"
+          @click="handleCreateCharacter"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors flex items-center gap-2 font-medium"
         >
-          ➕ Nowa postać
-        </router-link>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          Nowa Postać
+        </button>
+
       </header>
 
       <!-- Content -->
@@ -300,6 +313,10 @@ const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://
 const BACKEND_ORIGIN = API_URL.replace(/\/api\/?$/, '')
 
 const router = useRouter()
+
+function handleCreateCharacter() {
+  router.push('/characters/new')
+}
 
 const isDetailsModalOpen = ref(false)
 const detailsTarget = ref<AnyCharacter | null>(null)

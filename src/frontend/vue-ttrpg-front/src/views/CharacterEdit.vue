@@ -21,6 +21,16 @@
         </button>
       </header>
 
+      <!-- Błędy backendu / pobierania -->
+      <div
+        v-if="submitError"
+        ref="errorBanner"
+        class="scroll-mt-24 rounded-2xl border border-rose-600/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+        :class="bannerFlash ? 'ring-2 ring-rose-500/40' : ''"
+      >
+        {{ submitError }}
+      </div>
+
       <div v-if="loading" class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-slate-300">
         Ładowanie danych postaci…
       </div>
@@ -29,7 +39,13 @@
         <!-- 1) Podstawowe informacje + Rasa obok siebie na szerokich -->
         <div class="grid gap-6 lg:grid-cols-2">
           <!-- Sekcja: podstawowe informacje -->
-          <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4 flex flex-col">
+          <section
+            ref="sectionBasic"
+            class="scroll-mt-24 rounded-2xl border bg-slate-900/40 p-5 space-y-4 flex flex-col transition"
+            :class="flashKey === 'basic'
+              ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+              : 'border-slate-800'"
+          >
             <h2 class="text-lg font-semibold">
               Podstawowe informacje
             </h2>
@@ -48,26 +64,57 @@
                   </div>
                 </div>
 
-                <!-- Nazwa postaci -->
+                <!-- Nazwa postaci + Level -->
                 <div class="flex-1">
-                  <div class="flex-1 w-full min-w-0 lg:flex-none lg:w-full space-y-2.5">
-                    <label class="block text-sm font-medium text-slate-200">
-                      Nazwa postaci
-                    </label>
-                    <input
-                      v-model="characterName"
-                      type="text"
-                      class="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500"
-                      placeholder="np. Thranduil"
-                    >
+                  <div class="flex gap-4 items-end">
+                    <!-- Nazwa postaci -->
+                    <div class="flex-1 min-w-0 space-y-2.5">
+                      <label class="block text-sm font-medium text-slate-200">
+                        Nazwa postaci
+                      </label>
+                      <input
+                        ref="nameInput"
+                        v-model="characterName"
+                        type="text"
+                        class="w-full rounded-xl border bg-slate-900/60 px-3 py-2 text-sm outline-none focus:ring-1 transition"
+                        :class="flashKey === 'basic'
+                          ? 'border-rose-500/70 focus:border-rose-400 focus:ring-rose-500'
+                          : 'border-slate-700 focus:border-emerald-400 focus:ring-emerald-500'"
+                        placeholder="np. Thranduil"
+                      >
+                    </div>
+
+                    <!-- Level -->
+                    <div class="w-28 space-y-2.5">
+                      <label class="block text-sm font-medium text-slate-200">
+                        Level
+                      </label>
+                      <input
+                        v-model.number="level"
+                        type="number"
+                        min="1"
+                        max="20"
+                        step="1"
+                        class="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-3 py-2 text-sm outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-500"
+                        @blur="normalizeLevel"
+                        @change="normalizeLevel"
+                      >
+                    </div>
                   </div>
                 </div>
+
               </div>
             </div>
           </section>
 
           <!-- Sekcja: Rasa -->
-          <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+          <section
+            ref="sectionRace"
+            class="scroll-mt-24 rounded-2xl border bg-slate-900/40 p-5 space-y-4 transition"
+            :class="flashKey === 'race'
+              ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+              : 'border-slate-800'"
+          >
             <h2 class="text-lg font-semibold">
               Rasa
             </h2>
@@ -98,7 +145,13 @@
         </div>
 
         <!-- 2) Klasa -->
-        <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+        <section
+          ref="sectionClass"
+          class="scroll-mt-24 rounded-2xl border bg-slate-900/40 p-5 space-y-4 transition"
+          :class="flashKey === 'class'
+            ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+            : 'border-slate-800'"
+        >
           <h2 class="text-lg font-semibold">
             Klasa
           </h2>
@@ -140,7 +193,13 @@
         </section>
 
         <!-- 3) Zdolności / Atrybuty (Ability Scores) -->
-        <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+        <section
+          ref="sectionAbilities"
+          class="scroll-mt-24 rounded-2xl border bg-slate-900/40 p-5 space-y-4 transition"
+          :class="flashKey === 'abilities'
+            ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+            : 'border-slate-800'"
+        >
           <div class="flex items-start justify-between gap-4">
             <div>
               <h2 class="text-lg font-semibold">Zdolności (Atrybuty)</h2>
@@ -221,7 +280,13 @@
         </section>
 
         <!-- 4) Tło -->
-        <section class="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+        <section
+          ref="sectionBackground"
+          class="scroll-mt-24 rounded-2xl border bg-slate-900/40 p-5 space-y-4 transition"
+          :class="flashKey === 'background'
+            ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+            : 'border-slate-800'"
+        >
           <h2 class="text-lg font-semibold">
             Tło postaci
           </h2>
@@ -251,7 +316,13 @@
         </section>
 
         <!-- 5) Umiejętności (z biegłościami) -->
-        <section class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+        <section
+          ref="sectionSkills"
+          class="scroll-mt-24 space-y-4 rounded-2xl border bg-slate-900/40 p-5 transition"
+          :class="flashKey === 'skills'
+            ? 'border-rose-500/80 ring-2 ring-rose-500/35 bg-rose-500/5'
+            : 'border-slate-800'"
+        >
           <div class="flex items-center justify-between gap-3">
             <div>
               <h2 class="text-lg font-semibold">Umiejętności</h2>
@@ -396,10 +467,6 @@
             {{ submitting ? 'Zapisywanie…' : 'Zapisz zmiany' }}
           </button>
         </div>
-
-        <p v-if="submitError" class="mt-3 text-sm text-rose-300">
-          {{ submitError }}
-        </p>
       </div>
 
       <!-- Modal szczegółów rasy -->
@@ -650,6 +717,15 @@ function handleClassAvatarError(event: Event) {
 
 const mainAvatarBroken = ref(false)
 
+const races = ref<Race[]>([])
+const classes = ref<CharacterClass[]>([])
+const backgrounds = ref<Background[]>([])
+const skills = ref<Skill[]>([])
+
+const selectedRaceId = ref<number | null>(null)
+const selectedClassId = ref<number | null>(null)
+const selectedBackgroundId = ref<number | null>(null)
+
 const mainAvatarSrc = computed(() => {
   if (mainAvatarBroken.value) return defaultAvatar
   if (!selectedClassId.value) return defaultAvatar
@@ -665,6 +741,19 @@ function handleMainAvatarError(event: Event) {
 
 // --- state formularza ---
 const characterName = ref('')
+
+// LEVEL
+const level = ref<number>(1)
+
+function normalizeLevel() {
+  if (!Number.isFinite(level.value)) {
+    level.value = 1
+    return
+  }
+  level.value = Math.round(level.value)
+  if (level.value < 1) level.value = 1
+  if (level.value > 20) level.value = 20
+}
 
 type AbilityKey = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA'
 
@@ -710,7 +799,14 @@ function skillAbilityLabel(skillName: string) {
   return ability ?? "—"
 }
 
-const proficiencyBonus = computed(() => 2)
+const proficiencyBonus = computed(() => {
+  const lv = level.value
+  if (lv >= 17) return 6
+  if (lv >= 13) return 5
+  if (lv >= 9) return 4
+  if (lv >= 5) return 3
+  return 2
+})
 
 function formatSkillBonus(skillName: string, proficient: boolean) {
   const ability = (SKILL_ABILITY as Record<string, AbilityKey | undefined>)[skillName]
@@ -726,16 +822,7 @@ function resetStandardArray() {
   abilityAssign.value = { STR: null, DEX: null, CON: null, INT: null, WIS: null, CHA: null }
 }
 
-const races = ref<Race[]>([])
-const classes = ref<CharacterClass[]>([])
-const backgrounds = ref<Background[]>([])
-const skills = ref<Skill[]>([])
-
-const selectedRaceId = ref<number | null>(null)
-const selectedClassId = ref<number | null>(null)
-const selectedBackgroundId = ref<number | null>(null)
-
-// pomocniczo: nazwa wybranego tła/klasy
+// --- PROFI / skille ---
 const selectedBackgroundName = computed(() => {
   const id = selectedBackgroundId.value
   return id ? backgrounds.value.find(b => b.id === id)?.name ?? null : null
@@ -746,14 +833,12 @@ const selectedClassName = computed(() => {
   return id ? classes.value.find(c => c.id === id)?.name ?? null : null
 })
 
-// A) skille przyznane z tła (po nazwach, z configu)
 const backgroundSkillNames = computed<SkillName[]>(() => {
   const bgName = selectedBackgroundName.value
   if (!bgName) return []
   return (BACKGROUND_SKILLS[bgName] ?? []) as SkillName[]
 })
 
-// B) zasady klasy (ile i z jakiej listy)
 const classRule = computed(() => {
   const clsName = selectedClassName.value
   if (!clsName) return null
@@ -762,14 +847,12 @@ const classRule = computed(() => {
 
 const classPickRequired = computed(() => classRule.value?.pick ?? 0)
 
-// mapowanie skillName -> skillId z backendu (po name)
 const skillIdByName = computed(() => {
   const map = new Map<string, number>()
   for (const s of skills.value) map.set(s.name, s.id)
   return map
 })
 
-// A) ids przyznane z tła
 const backgroundSkillIds = computed<Set<number>>(() => {
   const set = new Set<number>()
   for (const n of backgroundSkillNames.value) {
@@ -784,14 +867,12 @@ const backgroundSkillsResolved = computed<Skill[]>(() => {
   return skills.value.filter(s => ids.has(s.id))
 })
 
-// B) lista opcji z klasy
 const classOptionNames = computed<SkillName[]>(() => {
   const rule = classRule.value
   if (!rule) return []
   return rule.options as SkillName[]
 })
 
-// B) ids opcji z klasy (bez tych z tła)
 const classOptionIds = computed<number[]>(() => {
   const bgIds = backgroundSkillIds.value
   const out: number[] = []
@@ -807,7 +888,6 @@ const classSkillsResolved = computed<Skill[]>(() => {
   return skills.value.filter(s => set.has(s.id))
 })
 
-// wybory usera z klasy (ids)
 const classPickedIds = ref<Set<number>>(new Set())
 
 function resetClassPicks() {
@@ -850,7 +930,6 @@ function classPickButtonLabel(skillId: number) {
   return classPickedIds.value.has(skillId) ? "Wybrane" : "Wybierz"
 }
 
-// finalne IDs do payloadu:
 const proficientSkillIds = computed<number[]>(() => {
   const out = new Set<number>()
   for (const id of backgroundSkillIds.value) out.add(id)
@@ -858,7 +937,6 @@ const proficientSkillIds = computed<number[]>(() => {
   return [...out]
 })
 
-// tylko do rozwijania opisów
 const expandedSkillIds = ref<Set<number>>(new Set())
 
 function toggleSkillDescription(id: number) {
@@ -868,10 +946,96 @@ function toggleSkillDescription(id: number) {
   expandedSkillIds.value = set
 }
 
+// scroll + chwilowy flash sekcji (walidacja UX)
+const sectionBasic = ref<HTMLElement | null>(null)
+const sectionRace = ref<HTMLElement | null>(null)
+const sectionClass = ref<HTMLElement | null>(null)
+const sectionAbilities = ref<HTMLElement | null>(null)
+const sectionBackground = ref<HTMLElement | null>(null)
+const sectionSkills = ref<HTMLElement | null>(null)
+
+const nameInput = ref<HTMLInputElement | null>(null)
+
+type FlashKey = 'basic' | 'race' | 'class' | 'abilities' | 'background' | 'skills' | null
+const flashKey = ref<FlashKey>(null)
+let flashToken = 0
+
+function scrollTo(el: HTMLElement | null) {
+  if (!el) return
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+function flashSection(key: Exclude<FlashKey, null>, el?: HTMLElement | null, focusEl?: HTMLElement | null) {
+  flashToken += 1
+  const my = flashToken
+
+  flashKey.value = key
+  if (el) scrollTo(el)
+
+  if (focusEl) {
+    window.setTimeout(() => focusEl.focus?.(), 250)
+  }
+
+  window.setTimeout(() => {
+    if (flashToken === my) flashKey.value = null
+  }, 1200)
+}
+
+function validateAndFocusFirstError(): boolean {
+  normalizeLevel()
+
+  // 1) Nazwa
+  if (!characterName.value.trim()) {
+    flashSection('basic', sectionBasic.value, nameInput.value)
+    return false
+  }
+
+  // 2) Rasa
+  if (!selectedRaceId.value) {
+    flashSection('race', sectionRace.value)
+    return false
+  }
+
+  // 3) Klasa
+  if (!selectedClassId.value) {
+    flashSection('class', sectionClass.value)
+    return false
+  }
+
+  // 4) Atrybuty
+  if (assignedCount.value < 6) {
+    flashSection('abilities', sectionAbilities.value)
+    return false
+  }
+
+  // 5) Tło
+  if (!selectedBackgroundId.value) {
+    flashSection('background', sectionBackground.value)
+    return false
+  }
+
+  // 6) Umiejętności (wybór z klasy, jeśli wymagany)
+  if (classPickRequired.value > 0 && classPickRemaining.value > 0) {
+    flashSection('skills', sectionSkills.value)
+    return false
+  }
+
+  return true
+}
+
 // --- submit / update ---
 const loading = ref(false)
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
+
+const errorBanner = ref<HTMLElement | null>(null)
+const bannerFlash = ref(false)
+
+function flashBanner() {
+  bannerFlash.value = true
+  scrollTo(errorBanner.value)
+  window.setTimeout(() => (bannerFlash.value = false), 1200)
+}
 
 function normalizeSkillIdsFromCharacter(ch: CharacterFromList): number[] {
   return Array.isArray(ch.characterSkillsIds)
@@ -887,6 +1051,9 @@ function prefillFromCharacter(ch: CharacterFromList) {
   selectedClassId.value = (ch.classId ?? null) as number | null
   selectedBackgroundId.value = (ch.backgroundId ?? null) as number | null
 
+  level.value = Number.isFinite(Number(ch.level)) ? Number(ch.level) : 1
+  normalizeLevel()
+
   // ability scores
   abilityAssign.value = {
     STR: ch.strength ?? null,
@@ -897,15 +1064,11 @@ function prefillFromCharacter(ch: CharacterFromList) {
     CHA: ch.charisma ?? null,
   }
 
-  // reset avatara fallbacku
   mainAvatarBroken.value = false
 
   // proficienty skills
   const profFromDb = new Set<number>(normalizeSkillIdsFromCharacter(ch))
 
-  // classPickedIds ma zawierać tylko te z profFromDb, które:
-  // - nie są z tła
-  // - są dozwolone przez klasę
   const allowedFromClass = new Set<number>(classOptionIds.value)
   const picked: number[] = []
 
@@ -915,32 +1078,16 @@ function prefillFromCharacter(ch: CharacterFromList) {
     picked.push(id)
   }
 
-  // jeśli backend zwrócił więcej niż limit -> przytnij
   const limit = classPickRequired.value
   const finalPicked = limit > 0 ? picked.slice(0, limit) : []
-
   classPickedIds.value = new Set(finalPicked)
 }
 
 async function handleUpdate() {
   submitError.value = null
 
-  if (!characterName.value.trim()) {
-    submitError.value = 'Podaj nazwę postaci.'
-    return
-  }
-  if (!selectedRaceId.value || !selectedClassId.value || !selectedBackgroundId.value) {
-    submitError.value = 'Wybierz rasę, klasę i tło.'
-    return
-  }
-  if (assignedCount.value < 6) {
-    submitError.value = 'Przypisz wszystkie wartości atrybutów.'
-    return
-  }
-  if (selectedClassId.value && classPickRemaining.value > 0) {
-    submitError.value = `Wybierz jeszcze ${classPickRemaining.value} umiejętności z klasy.`
-    return
-  }
+  // WALIDACJA (scroll + flash)
+  if (!validateAndFocusFirstError()) return
 
   const payload = {
     id: characterId.value,
@@ -948,7 +1095,7 @@ async function handleUpdate() {
     raceId: selectedRaceId.value,
     classId: selectedClassId.value,
     backgroundId: selectedBackgroundId.value,
-    level: 1,
+    level: level.value,
 
     strength: abilityAssign.value.STR!,
     dexterity: abilityAssign.value.DEX!,
@@ -969,6 +1116,7 @@ async function handleUpdate() {
     submitError.value =
       e?.response?.data?.message
       ?? `Nie udało się zaktualizować postaci (HTTP ${e?.response?.status ?? '??'}).`
+    flashBanner()
   } finally {
     submitting.value = false
   }
@@ -1046,6 +1194,7 @@ function confirmClassSelection() {
     selectedClassId.value = classPreview.value.id
     mainAvatarBroken.value = false
     resetClassPicks()
+    expandedSkillIds.value = new Set()
   }
   isClassModalOpen.value = false
 }
@@ -1067,6 +1216,7 @@ function confirmBackgroundSelection() {
   if (backgroundPreview.value) {
     selectedBackgroundId.value = backgroundPreview.value.id
     resetClassPicks()
+    expandedSkillIds.value = new Set()
   }
   isBackgroundModalOpen.value = false
 }
@@ -1078,6 +1228,7 @@ onMounted(async () => {
   if (!Number.isFinite(characterId.value)) {
     submitError.value = 'Nieprawidłowe ID postaci.'
     loading.value = false
+    flashBanner()
     return
   }
 
@@ -1093,6 +1244,7 @@ onMounted(async () => {
   } catch (e: any) {
     console.error(e)
     submitError.value = 'Nie udało się pobrać danych postaci do edycji.'
+    flashBanner()
   } finally {
     loading.value = false
   }
