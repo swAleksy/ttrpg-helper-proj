@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100">
     <div class="mx-auto max-w-6xl px-4 py-8 space-y-6">
-      <!-- Header -->
       <header class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div class="space-y-1">
           <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -10,20 +9,18 @@
       </header>
 
       <div class="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
-        <!-- Postacie -->
         <router-link
           :to="CHARACTERS_PATH"
-          class="group rounded-3xl border border-slate-800 bg-slate-900/20 p-7
-                 transition hover:border-slate-700 hover:bg-slate-900/30
-                 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300/40"
+          class="group rounded-3xl border border-slate-800 bg-slate-900/20 p-7 transition hover:border-slate-700 hover:bg-slate-900/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300/40"
         >
           <div class="min-w-0">
             <div class="flex items-start gap-3">
-              <span class="mt-2 inline-block h-2 w-2 rounded-full bg-emerald-400/70" />
+              <div class="flex h-7 shrink-0 items-center sm:h-8">
+                <span class="inline-block h-2 w-2 rounded-full bg-emerald-400/70" />
+              </div>
+
               <div class="min-w-0">
-                <h2 class="text-xl sm:text-2xl font-semibold tracking-tight truncate">
-                  Postacie
-                </h2>
+                <h2 class="text-xl sm:text-2xl font-semibold tracking-tight truncate">Postacie</h2>
                 <p class="mt-3 text-sm text-slate-400 leading-relaxed min-h-[40px]">
                   Zarządzaj postaciami: lista, podgląd i edycja.
                 </p>
@@ -44,16 +41,16 @@
           </div>
         </router-link>
 
-        <!-- Kampanie / Sesje -->
         <router-link
           :to="CAMPAIGNS_PATH"
-          class="group rounded-3xl border border-slate-800 bg-slate-900/20 p-7
-                 transition hover:border-slate-700 hover:bg-slate-900/30
-                 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300/40"
+          class="group rounded-3xl border border-slate-800 bg-slate-900/20 p-7 transition hover:border-slate-700 hover:bg-slate-900/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300/40"
         >
           <div class="min-w-0">
             <div class="flex items-start gap-3">
-              <span class="mt-2 inline-block h-2 w-2 rounded-full bg-violet-400/70" />
+              <div class="flex h-7 shrink-0 items-center sm:h-8">
+                <span class="inline-block h-2 w-2 rounded-full bg-violet-400/70" />
+              </div>
+
               <div class="min-w-0">
                 <h2 class="text-xl sm:text-2xl font-semibold tracking-tight truncate">
                   Kampanie i Sesje
@@ -84,6 +81,5 @@
 
 <script setup lang="ts">
 const CHARACTERS_PATH = '/characters'
-
 const CAMPAIGNS_PATH = '/campaigns'
 </script>

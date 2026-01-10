@@ -31,19 +31,19 @@ const submit = async () => {
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10">
     <div class="max-w-xl mx-auto">
-      <h1 class="text-3xl font-bold mb-2">Create New Campaign</h1>
-      <p class="text-slate-400 mb-8">Set up your next adventure.</p>
+      <h1 class="text-3xl font-bold mb-2">Stwórz nową kampanię</h1>
+      <p class="text-slate-400 mb-8">Zaplanuj swoją następną przygodę.</p>
 
       <div class="space-y-6">
         <input
           v-model="name"
-          placeholder="Campaign name"
+          placeholder="Nazwa kampanii"
           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"
         />
 
         <textarea
           v-model="description"
-          placeholder="Description (optional)"
+          placeholder="Opis (opcjonalny)"
           rows="4"
           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none"
         />
@@ -58,14 +58,14 @@ const submit = async () => {
             :disabled="campaignStore.isLoading"
             class="flex-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold py-3 rounded-xl transition-colors"
           >
-            {{ campaignStore.isLoading ? 'Creating...' : 'Create Campaign' }}
+            {{ campaignStore.isLoading ? 'Przygotowywanie...' : 'Stwórz Kampanię' }}
           </button>
 
           <button
             @click="router.back()"
             class="px-4 py-3 border border-slate-700 text-slate-400 hover:bg-slate-800 rounded-xl"
           >
-            Cancel
+            Anuluj
           </button>
         </div>
       </div>

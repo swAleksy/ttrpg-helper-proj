@@ -31,18 +31,18 @@ const handleDeleteCampaign = async (id: number) => {
 
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100">
-    <div class="mx-auto max-w-6xl px-4 py-8 space-y-8">
+    <div class="mx-auto max-w-7xl px-4 py-8 space-y-8">
       <header class="space-y-2">
-        <h1 class="text-3xl font-bold tracking-tight text-slate-100">
-          Twoje Kampanie
-        </h1>
+        <h1 class="text-3xl font-bold tracking-tight text-slate-100">Twoje Kampanie</h1>
         <p class="text-slate-400">
           Zarządzaj kampaniami, które prowadzisz, oraz tymi, w których grasz.
         </p>
       </header>
 
       <div v-if="campaignStore.isLoading" class="flex justify-center py-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-400"></div>
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-400"
+        ></div>
       </div>
 
       <div v-else class="space-y-12">
@@ -107,7 +107,9 @@ const handleDeleteCampaign = async (id: number) => {
                   <div
                     class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700 text-emerald-400"
                   >
-                    <span class="font-bold text-lg">{{ campaign.name.charAt(0).toUpperCase() }}</span>
+                    <span class="font-bold text-lg">{{
+                      campaign.name.charAt(0).toUpperCase()
+                    }}</span>
                   </div>
                   <button
                     @click.stop="handleDeleteCampaign(campaign.id)"
@@ -180,7 +182,9 @@ const handleDeleteCampaign = async (id: number) => {
                   <div
                     class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center border border-slate-700 text-blue-400"
                   >
-                    <span class="font-bold text-lg">{{ campaign.name.charAt(0).toUpperCase() }}</span>
+                    <span class="font-bold text-lg">{{
+                      campaign.name.charAt(0).toUpperCase()
+                    }}</span>
                   </div>
                 </div>
                 <h3
