@@ -4,15 +4,29 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import type { ChatMessagePayload, DiceRollPayload } from '@/types'
 import { useRoute } from 'vue-router'
 import { useSessionStore } from '@/stores/SessionStore'
+import { useCampaignStore } from '@/stores/CampaignStore'
+import { useAuthStore } from '@/stores/auth'
 import { resolveAvatarUrl } from '@/utils/avatar'
 
 const route = useRoute()
 const sessionStore = useSessionStore()
+const campaignStore = useCampaignStore()
+const authStore = useAuthStore()
 const { playersWithAvatar, events, notes, items, npcs } = storeToRefs(sessionStore)
 
 const session = computed(() => sessionStore.session)
 const isLoading = computed(() => sessionStore.isLoading)
 const campaignId = computed(() => Number(route.params.campaignId))
+
+const campaign = computed(() => {
+  return campaignStore.getCampaignById(campaignId.value)
+})
+
+const isGameMaster = computed(() => {
+  // We need the campaign loaded and the user logged in
+  if (!campaign.value || !authStore.user) return false
+  return campaign.value.gameMasterId === authStore.user.id
+})
 
 const sessionDateLabel = computed(() => formatSessionDatePL(session.value?.scheduledDate))
 
@@ -80,6 +94,17 @@ const activeTab = ref<'notes' | 'items' | 'npcs'>('notes')
 
 onMounted(async () => {
   const sessionId = Number(route.params.id)
+  const cId = campaignId.value
+  if (!campaign.value && cId) {
+    try {
+      // Try fetching as GM
+      await campaignStore.fetchCampaignGmById(cId)
+    } catch {
+      // If that fails (403/404), try fetching as Player
+      await campaignStore.fetchCampaignPlayerById(cId)
+    }
+  }
+
   if (sessionId) {
     await sessionStore.fetchSessionById(sessionId)
     await sessionStore.fetchCampaignData(campaignId.value)
@@ -172,7 +197,9 @@ const triggerAction = async (actionName: string) => {
   <div class="min-h-screen bg-slate-950 text-slate-100 font-sans">
     <div class="mx-auto max-w-6xl px-4 py-8">
       <div v-if="isLoading || !session" class="flex justify-center items-center h-[80vh]">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-400"></div>
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-400"
+        ></div>
       </div>
 
       <div v-else class="space-y-6">
@@ -198,13 +225,16 @@ const triggerAction = async (actionName: string) => {
           </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-250px)] lg:min-h-[600px]">
+        <div
+          class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[calc(100vh-250px)] lg:min-h-[600px]"
+        >
           <!-- Logi: dłuższe na wąskich ekranach -->
           <div
-            class="lg:col-span-2 flex flex-col bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl
-                   h-[70vh] sm:h-[75vh] lg:h-full"
+            class="lg:col-span-2 flex flex-col bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl h-[70vh] sm:h-[75vh] lg:h-full"
           >
-            <div class="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between">
+            <div
+              class="p-4 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between"
+            >
               <span class="font-semibold text-slate-300 flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -237,7 +267,12 @@ const triggerAction = async (actionName: string) => {
                     <div class="flex items-baseline gap-2">
                       <span class="text-sm font-bold text-emerald-400">{{ log.userName }}</span>
                       <span class="text-xs text-slate-600">
-                        {{ log.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                        {{
+                          log.timestamp.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        }}
                       </span>
                     </div>
                     <p class="text-slate-300 text-sm">{{ log.data.message }}</p>
@@ -265,7 +300,12 @@ const triggerAction = async (actionName: string) => {
                   class="flex gap-3 bg-slate-800/30 p-3 rounded-lg border-l-2 border-yellow-500/50"
                 >
                   <div class="text-yellow-500 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path
                         d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
                       />
@@ -307,7 +347,12 @@ const triggerAction = async (actionName: string) => {
                   type="submit"
                   class="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-emerald-400 transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path
                       d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
                     />
@@ -324,8 +369,19 @@ const triggerAction = async (actionName: string) => {
               <h3
                 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
                 Dostępne Akcje
               </h3>
@@ -364,7 +420,13 @@ const triggerAction = async (actionName: string) => {
               <h3
                 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -375,7 +437,9 @@ const triggerAction = async (actionName: string) => {
                 Użytkownicy ({{ playersWithAvatar.length }})
               </h3>
 
-              <div class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1 scrollbar-thin scrollbar-thumb-slate-700">
+              <div
+                class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1 scrollbar-thin scrollbar-thumb-slate-700"
+              >
                 <div
                   v-for="player in playersWithAvatar"
                   :key="player.id"
@@ -401,8 +465,10 @@ const triggerAction = async (actionName: string) => {
                 </div>
               </div>
 
-              <div class="mt-auto pt-4 border-t border-slate-800">
-                <label class="block text-xs font-medium text-slate-500 mb-2">Dodaj nowego gracza</label>
+              <div v-if="isGameMaster" class="mt-auto pt-4 border-t border-slate-800">
+                <label class="block text-xs font-medium text-slate-500 mb-2">
+                  Dodaj nowego gracza
+                </label>
                 <div class="flex gap-2">
                   <input
                     v-model="newPlayerId"
@@ -416,7 +482,12 @@ const triggerAction = async (actionName: string) => {
                     class="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-3 py-2 transition-colors flex items-center justify-center"
                     title="Dodaj gracza"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
                       <path
                         fill-rule="evenodd"
                         d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -431,7 +502,9 @@ const triggerAction = async (actionName: string) => {
         </div>
 
         <!-- Tabs -->
-        <div class="bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl mt-6">
+        <div
+          class="bg-slate-900/40 backdrop-blur-sm border border-slate-800 rounded-2xl overflow-hidden shadow-xl mt-6"
+        >
           <div class="flex border-b border-slate-800">
             <button
               @click="activeTab = 'notes'"
@@ -480,7 +553,9 @@ const triggerAction = async (actionName: string) => {
                   class="bg-slate-950 p-4 rounded-xl border border-slate-800"
                 >
                   <h4 class="font-bold text-emerald-400 mb-2">{{ note.name }}</h4>
-                  <p class="text-slate-300 text-sm whitespace-pre-wrap">{{ note.contentMarkdown }}</p>
+                  <p class="text-slate-300 text-sm whitespace-pre-wrap">
+                    {{ note.contentMarkdown }}
+                  </p>
                 </div>
               </div>
             </div>

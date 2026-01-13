@@ -62,7 +62,6 @@ onMounted(async () => {
 
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100">
-    <!-- zgodne z Navbar.vue / CharactersList.vue -->
     <div class="mx-auto max-w-6xl px-4 py-8">
       <div v-if="campaignStore.isLoading && !campaign" class="flex justify-center py-20">
         <div
@@ -142,6 +141,7 @@ onMounted(async () => {
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           <button
+            v-if="isGameMaster"
             @click="handleCreateSession"
             class="group relative flex flex-col items-center justify-center h-64 bg-slate-950/80 border-2 border-dashed border-slate-700 rounded-2xl transition-all duration-300 hover:border-emerald-500/50 hover:bg-emerald-500/5"
           >
