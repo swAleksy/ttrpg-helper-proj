@@ -1,3 +1,7 @@
+## Preview
+
+https://github.com/user-attachments/assets/bc884e14-ccc3-46fb-9136-03d04b5fc4a0
+
 ## Uruchomienie Projektu
 
 ### 1. Wymagane narzędzia
